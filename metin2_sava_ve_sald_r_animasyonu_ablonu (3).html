@@ -6,6 +6,7 @@
     <title>Metin2 Bedensel Savaşçı - Gerçekçi İnsan & Kılıç Animasyon Şablonu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -158,6 +159,16 @@
             <button id="toggle-panel-btn" onclick="toggleInspector()" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500/30 transition flex items-center gap-1">
                 <span>⚙️ Ekipman</span>
             </button>
+            <select id="export-kind-select" aria-label="Dışa aktarılacak varlık" class="max-w-28 sm:max-w-40 bg-slate-950/95 border border-emerald-400/50 rounded-lg px-1.5 py-1 text-[10px] sm:text-[11px] text-emerald-100 focus:outline-none focus:border-emerald-300">
+                <option value="character">Karakter + animasyon</option>
+                <option value="armor">Zırh seti</option>
+                <option value="sword">Kılıç</option>
+            </select>
+            <button id="header-export-btn" onclick="exportWarriorGLB(this)" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/50 hover:bg-emerald-500/30 transition flex items-center gap-1" title="Seçili varlığı GLB olarak indir">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
+                <span>GLB İndir</span>
+            </button>
+            <span id="header-export-status" class="hidden fixed top-14 right-2 z-50 max-w-[calc(100vw-1rem)] rounded-lg border border-emerald-400/50 bg-slate-950/95 px-3 py-2 text-[11px] font-semibold text-emerald-100 shadow-xl" role="status" aria-live="polite"></span>
         </div>
     </header>
 
@@ -242,6 +253,10 @@
                     <input type="checkbox" id="metin-toggle" checked onchange="toggleMetinStone(this.checked)" class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
                 </div>
             </div>
+            <div class="pt-2 border-t border-slate-800/80">
+                <button id="export-character-btn" onclick="exportWarriorGLB(this)" class="w-full px-3 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/60 text-amber-200 font-semibold text-[11px] transition">Karakteri ve animasyonları GLB indir</button>
+                <p id="export-status" class="mt-1.5 min-h-4 text-[10px] text-slate-400" role="status" aria-live="polite"></p>
+            </div>
         </div>
     </aside>
 
@@ -309,6 +324,8 @@
     <script>
         let scene, camera, renderer, clock;
         let warriorGroup, joints = {}, fingerJoints = { L: [], R: [] }, capeSegments = [];
+        let isSamplingAnimations = false;
+        let preparedGLBDownload = null;
         let swordGroup, bladeMesh, bladeEdgeGlow, swordAuraLight, swordTipMarker, swordBaseMarker, swordMidMarker;
         let weaponFlameSprites = [];
         let groundMesh, playerTargetRing, metinStoneGroup, metinRockMesh;
@@ -1330,6 +1347,7 @@
 
             // MMORPG Target Selection Ring
             playerTargetRing = new THREE.Group();
+            playerTargetRing.name = 'Savasci_TargetRing';
             playerTargetRing.position.y = 0.015;
             const outerTarget = new THREE.Mesh(
                 new THREE.RingGeometry(0.68, 0.76, 40),
@@ -1350,6 +1368,7 @@
             const pelvisGeo = new THREE.CylinderGeometry(0.168, 0.154, 0.21, 24, 4);
             pelvisGeo.scale(1.06, 1, 0.84);
             const pelvisMesh = new THREE.Mesh(pelvisGeo, materials.chainmail);
+            pelvisMesh.name = 'Savasci_Pelvis_Base';
             pelvisMesh.position.y = -0.02;
             pelvisMesh.castShadow = true;
             joints.hips.add(pelvisMesh);
@@ -1404,6 +1423,7 @@
             // Base Sculpted Torso Cuirass (Clean, unified 3D human V-taper torso with 1024x1024 armor texture — NO clipping red boxes!)
             const torsoGeo = createSculptedTorsoGeometry();
             const torsoMesh = new THREE.Mesh(torsoGeo, materials.cuirassBody);
+            torsoMesh.name = 'Savasci_Torso_Base';
             torsoMesh.castShadow = true;
             torsoMesh.receiveShadow = true;
             joints.chest.add(torsoMesh);
@@ -1427,9 +1447,362 @@
             createLegHierarchy('L', 1);
 
             swordGroup = new THREE.Group();
+            swordGroup.name = 'Savasci_Kilic';
             joints.weaponMount.add(swordGroup);
             buildSwordGeometry(state.swordType);
             changeHelmetMode(state.helmetMode);
+
+            warriorGroup.name = 'Savasci';
+            Object.entries(joints).forEach(([jointName, joint]) => {
+                if (joint && joint.isObject3D) joint.name = 'Savasci_' + jointName;
+            });
+            joints.root.name = 'Savasci_Rig';
+            let nodeIndex = 0;
+            joints.root.traverse((node) => {
+                if (node.isGroup && !node.name) node.name = 'Savasci_Node_' + nodeIndex++;
+            });
+        }
+
+        function snapshotObjectTransforms(root) {
+            const snapshots = new Map();
+            root.traverse((node) => {
+                snapshots.set(node, {
+                    position: node.position.clone(),
+                    quaternion: node.quaternion.clone(),
+                    scale: node.scale.clone()
+                });
+            });
+            return snapshots;
+        }
+
+        function restoreObjectTransforms(snapshots) {
+            snapshots.forEach((transform, node) => {
+                node.position.copy(transform.position);
+                node.quaternion.copy(transform.quaternion);
+                node.scale.copy(transform.scale);
+            });
+        }
+
+        function captureTransformValues(nodes) {
+            const values = new Map();
+            nodes.forEach((node) => {
+                values.set(node, { positions: [], quaternions: [], scales: [] });
+            });
+            return values;
+        }
+
+        function recordTransformValues(nodes, values) {
+            nodes.forEach((node) => {
+                const tracks = values.get(node);
+                tracks.positions.push(node.position.x, node.position.y, node.position.z);
+                tracks.quaternions.push(node.quaternion.x, node.quaternion.y, node.quaternion.z, node.quaternion.w);
+                tracks.scales.push(node.scale.x, node.scale.y, node.scale.z);
+            });
+        }
+
+        function hasAnimatedValues(values, itemSize) {
+            for (let i = itemSize; i < values.length; i++) {
+                if (Math.abs(values[i] - values[i % itemSize]) > 0.00001) return true;
+            }
+            return false;
+        }
+
+        function makeBakedAnimationClip(name, duration, actionState, walking, nodes) {
+            warriorGroup.position.set(0, 0, 0);
+            warriorGroup.rotation.set(0, 0, 0);
+            state.actionState = 'idle';
+            state.actionTime = 0;
+            state.lastActionProgress = 0;
+            state.hitMilestones = {};
+            state.queuedNextCombo = false;
+            state.isHoldingAttack = false;
+            state.hitStopTimer = 0;
+            state.hitVibration = 0;
+            state.currentSpeed = 0;
+            state.walkCyclePhase = 0;
+            state.moveKeys = { w: false, a: false, s: false, d: false };
+            state.joyVec.set(0, 0);
+            updateWarriorAnimation(1, 0);
+            state.walkCyclePhase = 0;
+
+            state.actionState = actionState;
+            state.actionDuration = duration;
+            state.actionTime = 0;
+            state.lastActionProgress = 0;
+            state.currentSpeed = walking ? 1 : 0;
+            state.joyVec.y = walking ? 1 : 0;
+
+            const frameRate = 30;
+            const frameCount = Math.ceil(duration * frameRate);
+            const times = [0];
+            const values = captureTransformValues(nodes);
+            recordTransformValues(nodes, values);
+            let elapsed = 0;
+
+            for (let frame = 1; frame <= frameCount; frame++) {
+                const sampleTime = Math.min(duration, frame / frameRate);
+                const delta = sampleTime - elapsed;
+                updateWarriorAnimation(delta, sampleTime);
+                if (actionState === 'idle') warriorGroup.position.set(0, 0, 0);
+                elapsed = sampleTime;
+                times.push(sampleTime);
+                recordTransformValues(nodes, values);
+            }
+
+            const tracks = [];
+            values.forEach((transform, node) => {
+                if (hasAnimatedValues(transform.positions, 3)) {
+                    tracks.push(new THREE.VectorKeyframeTrack(node.name + '.position', times, transform.positions));
+                }
+                if (hasAnimatedValues(transform.quaternions, 4)) {
+                    tracks.push(new THREE.QuaternionKeyframeTrack(node.name + '.quaternion', times, transform.quaternions));
+                }
+                if (hasAnimatedValues(transform.scales, 3)) {
+                    tracks.push(new THREE.VectorKeyframeTrack(node.name + '.scale', times, transform.scales));
+                }
+            });
+            return new THREE.AnimationClip(name, duration, tracks);
+        }
+
+        async function createWarriorAnimationClips(onProgress) {
+            const nodes = [];
+            warriorGroup.traverse((node) => {
+                if (!node.isGroup) return;
+                let ancestor = node;
+                while (ancestor && ancestor !== warriorGroup.parent) {
+                    if (!ancestor.visible) return;
+                    if (ancestor === warriorGroup) break;
+                    ancestor = ancestor.parent;
+                }
+                nodes.push(node);
+            });
+
+            const idleDuration = Math.PI * 2 / 1.2;
+            const walkDuration = Math.PI * 2 / 10.4;
+            const attackClips = [
+                ['Slash_1', 'slash1', 0.76],
+                ['Slash_2', 'slash2', 0.74],
+                ['Slash_3', 'slash3', 0.88],
+                ['Slash_4', 'slash4', 1.08],
+                ['Skill_Aura', 'auraCast', 1.48],
+                ['Skill_Spin', 'spin', 1.62],
+                ['Skill_Triple', 'triple', 1.72],
+                ['Skill_Dash', 'dash', 1.12]
+            ];
+            const clipDefinitions = [
+                ['Idle', idleDuration, 'idle', false],
+                ['Walk_Run', walkDuration, 'idle', true],
+                ...attackClips.map(([name, actionState, duration]) => [name, duration, actionState, false])
+            ];
+            const clips = [];
+            for (let index = 0; index < clipDefinitions.length; index++) {
+                const [name, duration, actionState, walking] = clipDefinitions[index];
+                if (onProgress) onProgress(name, index + 1, clipDefinitions.length);
+                await new Promise((resolve) => setTimeout(resolve, 0));
+                clips.push(makeBakedAnimationClip(name, duration, actionState, walking, nodes));
+            }
+            return clips;
+        }
+
+        function validateAnimationClips(root, clips) {
+            const expectedNames = [
+                'Idle', 'Walk_Run', 'Slash_1', 'Slash_2', 'Slash_3', 'Slash_4',
+                'Skill_Aura', 'Skill_Spin', 'Skill_Triple', 'Skill_Dash'
+            ];
+            const actualNames = new Set(clips.map((clip) => clip.name));
+            const missingNames = expectedNames.filter((name) => !actualNames.has(name));
+            if (missingNames.length) throw new Error('Missing animation clips: ' + missingNames.join(', '));
+
+            clips.forEach((clip) => {
+                if (clip.tracks.length === 0) throw new Error('Animation has no tracks: ' + clip.name);
+                clip.tracks.forEach((track) => {
+                    const binding = THREE.PropertyBinding.parseTrackName(track.name);
+                    if (!THREE.PropertyBinding.findNode(root, binding.nodeName)) {
+                        throw new Error('Animation target not found: ' + track.name);
+                    }
+                });
+            });
+        }
+
+        function downloadGLB(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function createWarriorExportAsset(assetType) {
+            if (assetType === 'sword') {
+                const swordAsset = swordGroup.clone(true);
+                swordAsset.name = 'Metin2_Kilic_' + state.swordType;
+                swordAsset.position.set(0, 0, 0);
+                swordAsset.rotation.set(0, 0, 0);
+                swordAsset.scale.set(1, 1, 1);
+                swordAsset.userData = { equipmentType: 'weapon', equipmentSlot: 'weapon_r', attachTo: 'Savasci_weaponMount' };
+                return swordAsset;
+            }
+
+            const assetRoot = warriorGroup.clone(true);
+            assetRoot.position.set(0, 0, 0);
+            assetRoot.rotation.set(0, 0, 0);
+            assetRoot.scale.set(1, 1, 1);
+            const targetRing = assetRoot.getObjectByName('Savasci_TargetRing');
+            if (targetRing) targetRing.parent.remove(targetRing);
+            const sword = assetRoot.getObjectByName('Savasci_Kilic');
+            if (sword) sword.parent.remove(sword);
+
+            const armorMaterials = new Set([
+                materials.cuirassBody,
+                materials.armorSteel,
+                materials.armorAccentPlate,
+                materials.goldTrim,
+                materials.leather,
+                materials.cape,
+                materials.chainmail,
+                materials.hornBone
+            ]);
+
+            assetRoot.traverse((node) => {
+                if (!node.isMesh) return;
+                const nodeMaterials = Array.isArray(node.material) ? node.material : [node.material];
+                const isArmor = nodeMaterials.some((material) => armorMaterials.has(material));
+                const isBodyUnderlay = node.name === 'Savasci_Torso_Base'
+                    || node.name === 'Savasci_Pelvis_Base'
+                    || node.name.includes('_Base_')
+                    || nodeMaterials.includes(materials.chainmail);
+
+                if (assetType === 'armor') {
+                    node.visible = isArmor;
+                } else if (isBodyUnderlay) {
+                    node.material = materials.humanSkin.clone();
+                } else if (isArmor) {
+                    node.visible = false;
+                }
+            });
+
+            assetRoot.name = assetType === 'armor' ? 'Metin2_Zirh_' + state.armorTheme : 'Metin2_Karakter_Rig';
+            assetRoot.userData = assetType === 'armor'
+                ? { equipmentType: 'armor', equipmentSlot: 'body', skeletonRoot: 'Savasci_Rig', armorTheme: state.armorTheme }
+                : { equipmentType: 'character', skeletonRoot: 'Savasci_Rig', animationClips: 10 };
+            return assetRoot;
+        }
+
+        async function exportWarriorGLB(clickedButton) {
+            const button = clickedButton || document.getElementById('export-character-btn');
+            const status = document.getElementById(button.id === 'header-export-btn' ? 'header-export-status' : 'export-status');
+            if (!joints.root || !THREE.GLTFExporter) {
+                status.textContent = 'GLB dışa aktarıcı yüklenemedi.';
+                status.classList.remove('hidden');
+                return;
+            }
+
+            status.classList.remove('hidden');
+            const assetType = document.getElementById('export-kind-select').value;
+            if (preparedGLBDownload && preparedGLBDownload.assetType === assetType) {
+                const prepared = preparedGLBDownload;
+                preparedGLBDownload = null;
+                downloadGLB(prepared.blob, prepared.fileName);
+                status.textContent = 'GLB indirildi: ' + prepared.fileName;
+                return;
+            }
+
+            button.disabled = true;
+            const statusText = {
+                character: 'Karakter ve animasyon klipleri hazırlanıyor...',
+                armor: 'Seçili zırh seti hazırlanıyor...',
+                sword: 'Seçili kılıç hazırlanıyor...'
+            };
+            status.textContent = statusText[assetType];
+            let exportTimeout;
+            let exportFinished = false;
+            const savedState = {
+                ...state,
+                moveKeys: { ...state.moveKeys },
+                joyVec: state.joyVec.clone(),
+                hitMilestones: { ...state.hitMilestones }
+            };
+            const transformSnapshots = snapshotObjectTransforms(warriorGroup);
+            const savedCameraTheta = camState.theta;
+            let animations;
+
+            animations = [];
+            if (assetType === 'character') {
+                isSamplingAnimations = true;
+                try {
+                    state.animSpeed = 1;
+                    state.metinActive = false;
+                    camState.theta = 0;
+                    animations = await createWarriorAnimationClips((name, index, total) => {
+                        status.textContent = 'Animasyonlar hazırlanıyor ' + index + '/' + total + ': ' + name;
+                    });
+                } catch (error) {
+                    console.error('Animation sampling failed:', error);
+                    button.disabled = false;
+                    status.textContent = 'Animasyon export hatası: ' + error.message;
+                    return;
+                } finally {
+                    isSamplingAnimations = false;
+                    Object.assign(state, savedState);
+                    camState.theta = savedCameraTheta;
+                    restoreObjectTransforms(transformSnapshots);
+                }
+            }
+
+            try {
+                warriorGroup.updateMatrixWorld(true);
+                const exportRoot = createWarriorExportAsset(assetType);
+                const unsupportedNodes = [];
+                exportRoot.traverse((node) => {
+                    if (node.isSprite || node.isLight || node.isPoints) unsupportedNodes.push(node);
+                });
+                unsupportedNodes.forEach((node) => node.parent && node.parent.remove(node));
+
+                if (animations.length) validateAnimationClips(exportRoot, animations);
+                const exporter = new THREE.GLTFExporter();
+                exportTimeout = setTimeout(() => {
+                    exportFinished = true;
+                    button.disabled = false;
+                    status.textContent = 'GLB dışa aktarımı zaman aşımına uğradı. Tekrar deneyin.';
+                }, 60000);
+                exporter.parse(exportRoot, (result) => {
+                    if (exportFinished) return;
+                    exportFinished = true;
+                    clearTimeout(exportTimeout);
+                    try {
+                        if (!(result instanceof ArrayBuffer) || new DataView(result).getUint32(0, true) !== 0x46546c67) {
+                            throw new Error('Exporter did not return a binary GLB.');
+                        }
+                        const blob = new Blob([result], { type: 'model/gltf-binary' });
+                        const fileName = assetType === 'character'
+                            ? 'metin2_karakter_rig_animasyon.glb'
+                            : assetType === 'armor'
+                                ? 'metin2_zirh_' + state.armorTheme + '.glb'
+                                : 'metin2_kilic_' + state.swordType + '.glb';
+                        if (assetType === 'character') {
+                            preparedGLBDownload = { assetType, blob, fileName };
+                            status.textContent = 'Animasyonlu GLB hazır. İndirmek için GLB İndir düğmesine tekrar bas.';
+                        } else {
+                            downloadGLB(blob, fileName);
+                            status.textContent = assetType === 'armor'
+                                ? 'Zırh GLB indirildi; karakter rig eklem isimleri korundu.'
+                                : 'Kılıç GLB indirildi; weapon_r ekipman yuvası metaverisi eklendi.';
+                        }
+                    } catch (error) {
+                        console.error('GLB result validation failed:', error);
+                        status.textContent = 'GLB sonucu doğrulanamadı. Konsoldaki hatayı kontrol edin.';
+                    } finally {
+                        button.disabled = false;
+                    }
+                }, { binary: true, onlyVisible: true, animations });
+            } catch (error) {
+                if (exportTimeout) clearTimeout(exportTimeout);
+                exportFinished = true;
+                console.error('GLB export failed:', error);
+                button.disabled = false;
+                status.textContent = 'GLB oluşturulamadı. Konsoldaki hatayı kontrol edin.';
+            }
         }
 
         function createSculptedHumanHeadGeometry() {
@@ -1990,6 +2363,7 @@
 
             const thighGeo = createLimbSegmentGeometry(0.098, 0.076, 0.44, 0.18);
             const thighMesh = new THREE.Mesh(thighGeo, materials.chainmail);
+            thighMesh.name = 'Savasci_Thigh_Base_' + label;
             thighMesh.position.y = -0.22;
             thighMesh.castShadow = true;
             thigh.add(thighMesh);
@@ -2019,6 +2393,7 @@
 
             const shinGeo = createLimbSegmentGeometry(0.078, 0.058, 0.44, 0.15);
             const shinMesh = new THREE.Mesh(shinGeo, materials.armorSteel);
+            shinMesh.name = 'Savasci_Shin_Base_' + label;
             shinMesh.position.y = -0.22;
             shinMesh.castShadow = true;
             knee.add(shinMesh);
@@ -2033,6 +2408,7 @@
             joints['ankle' + label] = ankle;
 
             const heelMesh = new THREE.Mesh(new THREE.BoxGeometry(0.092, 0.082, 0.125), materials.armorSteel);
+            heelMesh.name = 'Savasci_Foot_Base_' + label;
             heelMesh.position.set(0, -0.04, -0.01);
             heelMesh.castShadow = true;
             ankle.add(heelMesh);
@@ -2043,6 +2419,7 @@
             joints['toe' + label] = toe;
 
             const bootFront = new THREE.Mesh(new THREE.ConeGeometry(0.058, 0.16, 8), materials.armorSteel);
+            bootFront.name = 'Savasci_Toe_Base_' + label;
             bootFront.rotation.x = Math.PI / 2;
             bootFront.scale.set(1.08, 1, 0.68);
             bootFront.position.set(0, 0.015, 0.065);
@@ -2337,6 +2714,7 @@
         }
 
         function updateSlashTrail(isSwinging) {
+            if (isSamplingAnimations) return;
             const tipWorld = new THREE.Vector3();
             const baseWorld = new THREE.Vector3();
             swordTipMarker.getWorldPosition(tipWorld);
@@ -2519,7 +2897,7 @@
         }
 
         function emitSparks(origin, count = 28, colorHex = 0xffaa00, speedScale = 1.0) {
-            if (!sparkParticles) return;
+            if (isSamplingAnimations || !sparkParticles) return;
             const colAttr = sparkParticles.geometry.attributes.color;
             const c = new THREE.Color(colorHex);
             let spawned = 0;
@@ -2679,6 +3057,7 @@
         }
 
         function spawnVerticalLightPillars(centerPos, colorHex, count = 6) {
+            if (isSamplingAnimations) return;
             const group = new THREE.Group();
             group.position.copy(centerPos);
 
@@ -2767,6 +3146,7 @@
         }
 
         function spawnCrescentWave(origin, angleY, colorHex, tiltAngle = 0) {
+            if (isSamplingAnimations) return;
             const waveGroup = new THREE.Group();
             waveGroup.position.copy(origin);
             waveGroup.position.y = 0.95;
@@ -2842,6 +3222,7 @@
         }
 
         function spawnFootstepDust(worldPos, scaleMultiplier = 1.0) {
+            if (isSamplingAnimations) return;
             const ringGeo = new THREE.RingGeometry(0.05, 0.22 * scaleMultiplier, 18);
             const ringMat = new THREE.MeshBasicMaterial({
                 color: 0xd6d3d1,
@@ -2858,6 +3239,7 @@
         }
 
         function spawnGroundSlashScar(worldPos, yawAngle, colorHex = 0xff5500, length = 2.4) {
+            if (isSamplingAnimations) return;
             const scarGroup = new THREE.Group();
             scarGroup.position.set(worldPos.x, 0.026, worldPos.z);
             scarGroup.rotation.y = yawAngle;
@@ -2893,6 +3275,7 @@
         }
 
         function spawnSonicBoomRing(worldPos, yawAngle, colorHex = 0xa855f7) {
+            if (isSamplingAnimations) return;
             const ringGeo = new THREE.RingGeometry(0.35, 0.68, 32);
             const ringMat = new THREE.MeshBasicMaterial({
                 color: colorHex,
@@ -2918,6 +3301,7 @@
         }
 
         function spawnGroundShockwave(worldPos, colorHex = 0xfbbf24, maxRadius = 2.4, dmgMultiplier = 1.0) {
+            if (isSamplingAnimations) return;
             const ringGeo = new THREE.RingGeometry(0.22, 0.56, 36);
             const ringMat = new THREE.MeshBasicMaterial({
                 color: colorHex,
@@ -3722,11 +4106,13 @@
                 } else if (p >= 1) {
                     joints.hips.rotation.y = Math.atan2(Math.sin(joints.hips.rotation.y), Math.cos(joints.hips.rotation.y));
                     state.actionState = 'idle';
-                    setTimeout(() => {
-                        if (state.actionState === 'idle') {
-                            document.getElementById('combo-indicator').style.opacity = '0';
-                        }
-                    }, 350);
+                    if (!isSamplingAnimations) {
+                        setTimeout(() => {
+                            if (state.actionState === 'idle') {
+                                document.getElementById('combo-indicator').style.opacity = '0';
+                            }
+                        }, 350);
+                    }
                 }
             }
 
@@ -3821,8 +4207,10 @@
                 seg.rotation.z = Math.cos(elapsedTime * 3.2 + idx * 0.5) * 0.032;
             });
 
-            updateVFXSystems(dt, elapsedTime);
-            updateSlashTrail(isBladeSwinging);
+            if (!isSamplingAnimations) {
+                updateVFXSystems(dt, elapsedTime);
+                updateSlashTrail(isBladeSwinging);
+            }
         }
 
         function updateVFXSystems(dt, elapsedTime) {
@@ -4184,6 +4572,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
+            if (isSamplingAnimations) return;
             const rawDt = Math.min(clock.getDelta(), 0.1);
             const elapsedTime = clock.getElapsedTime();
 
