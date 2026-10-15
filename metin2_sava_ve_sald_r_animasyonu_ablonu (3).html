@@ -6,6 +6,7 @@
     <title>Metin2 Bedensel Savaşçı - Gerçekçi İnsan & Kılıç Animasyon Şablonu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -168,6 +169,7 @@
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
                 <span>GLB İndir</span>
             </button>
+            <a id="prepared-glb-download" class="hidden px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-emerald-500 text-slate-950 border border-emerald-300 hover:bg-emerald-400 transition" role="button">Hazır GLB'yi indir</a>
             <span id="header-export-status" class="hidden fixed top-14 right-2 z-50 max-w-[calc(100vw-1rem)] rounded-lg border border-emerald-400/50 bg-slate-950/95 px-3 py-2 text-[11px] font-semibold text-emerald-100 shadow-xl" role="status" aria-live="polite"></span>
         </div>
     </header>
@@ -325,7 +327,14 @@
         let scene, camera, renderer, clock;
         let warriorGroup, joints = {}, fingerJoints = { L: [], R: [] }, capeSegments = [];
         let isSamplingAnimations = false;
-        let preparedGLBDownload = null;
+        let uploadedCharacterRoot = null;
+        let uploadedCharacterMixer = null;
+        let uploadedAnimationActions = new Map();
+        let uploadedCurrentAction = null;
+        let uploadedCurrentClip = '';
+        let uploadedArmorMeshes = [];
+        let uploadedSwordRoot = null;
+        let uploadedRigActive = false;
         let swordGroup, bladeMesh, bladeEdgeGlow, swordAuraLight, swordTipMarker, swordBaseMarker, swordMidMarker;
         let weaponFlameSprites = [];
         let groundMesh, playerTargetRing, metinStoneGroup, metinRockMesh;
@@ -1174,10 +1183,136 @@
             createSkillVFXSystems(textures);
             createPlusNineSparkles(textures.sparkTexture);
             createMetinStoneTarget();
+            loadUploadedGameAssets();
 
             setupInteractionEvents();
             setupMobileJoystick();
             updateCameraPosition(0.016);
+        }
+
+        function loadGLTFAsset(loader, url) {
+            return new Promise((resolve, reject) => loader.load(url, resolve, undefined, reject));
+        }
+
+        async function loadUploadedGameAssets() {
+            const loader = new THREE.GLTFLoader();
+            const files = [
+                'metin2_karakter_rig_animasyon.glb',
+                'metin2_zirh_monk.glb',
+                'metin2_kilic_longsword.glb'
+            ];
+
+            try {
+                const [characterAsset, armorAsset, swordAsset] = await Promise.all(
+                    files.map((file) => loadGLTFAsset(loader, file))
+                );
+                const characterRoot = characterAsset.scene;
+                const characterGroups = new Map();
+                characterRoot.traverse((node) => {
+                    if (node.isGroup && node.name) characterGroups.set(node.name, node);
+                });
+
+                uploadedArmorMeshes = [];
+                const missingArmorGroups = [];
+                armorAsset.scene.traverse((node) => {
+                    if (!node.isMesh) return;
+                    const targetGroup = characterGroups.get(node.parent && node.parent.name);
+                    if (!targetGroup) {
+                        missingArmorGroups.push(node.parent && node.parent.name || node.name);
+                        return;
+                    }
+
+                    const armorMesh = node.clone();
+                    armorMesh.castShadow = true;
+                    armorMesh.receiveShadow = true;
+                    targetGroup.add(armorMesh);
+                    uploadedArmorMeshes.push(armorMesh);
+                });
+                if (missingArmorGroups.length || uploadedArmorMeshes.length === 0) {
+                    throw new Error('Zırh eklem eşleşmesi tamamlanamadı: ' + missingArmorGroups.slice(0, 4).join(', '));
+                }
+
+                const weaponMount = characterRoot.getObjectByName('Savasci_weaponMount');
+                const swordRoot = swordAsset.scene.children[0];
+                if (!weaponMount || !swordRoot) throw new Error('Karakterde Savasci_weaponMount veya kılıç GLB kökü bulunamadı.');
+                weaponMount.add(swordAsset.scene);
+                uploadedSwordRoot = swordAsset.scene;
+
+                uploadedCharacterRoot = characterRoot;
+                uploadedCharacterMixer = new THREE.AnimationMixer(characterRoot);
+                uploadedAnimationActions = new Map();
+                characterAsset.animations.forEach((clip) => uploadedAnimationActions.set(clip.name, clip));
+                warriorGroup.add(characterRoot);
+
+                const capeToggle = document.getElementById('cape-toggle');
+                if (capeToggle) capeToggle.addEventListener('change', refreshUploadedAssetVisibility);
+                refreshUploadedAssetVisibility();
+
+                const status = document.getElementById('header-export-status');
+                status.textContent = 'GitHub GLB karakteri, Keşiş zırhı ve Uzun Kılıç oyuna yüklendi.';
+                status.classList.remove('hidden');
+                setTimeout(() => status.classList.add('hidden'), 4500);
+            } catch (error) {
+                console.error('Uploaded GLB integration failed; using procedural character:', error);
+                const status = document.getElementById('header-export-status');
+                status.textContent = 'GLB modelleri yüklenemedi; prosedürel karakter kullanılıyor: ' + error.message;
+                status.classList.remove('hidden');
+            }
+        }
+
+        function refreshUploadedAssetVisibility() {
+            if (!uploadedCharacterRoot) return;
+            const capeToggle = document.getElementById('cape-toggle');
+            const canUseUploadedSet = state.armorTheme === 'monk'
+                && state.swordType === 'longsword'
+                && state.helmetMode === 'none'
+                && !(capeToggle && capeToggle.checked);
+
+            uploadedRigActive = canUseUploadedSet;
+            uploadedCharacterRoot.visible = canUseUploadedSet;
+            if (joints.root) joints.root.visible = !canUseUploadedSet;
+            uploadedArmorMeshes.forEach((mesh) => { mesh.visible = canUseUploadedSet; });
+            if (uploadedSwordRoot) uploadedSwordRoot.visible = canUseUploadedSet;
+            if (!canUseUploadedSet && uploadedCurrentAction) {
+                uploadedCurrentAction.stop();
+                uploadedCurrentAction = null;
+                uploadedCurrentClip = '';
+            }
+        }
+
+        function updateUploadedCharacterAnimation(dt) {
+            if (!uploadedRigActive || !uploadedCharacterMixer) return;
+
+            const actionClips = {
+                slash1: 'Slash_1',
+                slash2: 'Slash_2',
+                slash3: 'Slash_3',
+                slash4: 'Slash_4',
+                auraCast: 'Skill_Aura',
+                spin: 'Skill_Spin',
+                triple: 'Skill_Triple',
+                dash: 'Skill_Dash'
+            };
+            const clipName = state.actionState === 'idle'
+                ? (state.currentSpeed > 0.12 ? 'Walk_Run' : 'Idle')
+                : (actionClips[state.actionState] || 'Idle');
+
+            if (clipName !== uploadedCurrentClip) {
+                const clip = uploadedAnimationActions.get(clipName);
+                if (!clip) return;
+                const nextAction = uploadedCharacterMixer.clipAction(clip);
+                const isLooping = clipName === 'Idle' || clipName === 'Walk_Run';
+                nextAction.reset();
+                nextAction.enabled = true;
+                nextAction.clampWhenFinished = !isLooping;
+                nextAction.setLoop(isLooping ? THREE.LoopRepeat : THREE.LoopOnce, isLooping ? Infinity : 1);
+                if (uploadedCurrentAction) uploadedCurrentAction.fadeOut(0.10);
+                nextAction.fadeIn(0.10).play();
+                uploadedCurrentAction = nextAction;
+                uploadedCurrentClip = clipName;
+            }
+
+            uploadedCharacterMixer.update(dt);
         }
 
         function createMaterials(textures) {
@@ -1624,13 +1759,23 @@
             });
         }
 
-        function downloadGLB(blob, fileName) {
+        function showGLBDownloadLink(blob, fileName, status, message) {
+            const link = document.getElementById('prepared-glb-download');
+            if (link.dataset.objectUrl) URL.revokeObjectURL(link.dataset.objectUrl);
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
             link.href = url;
             link.download = fileName;
-            link.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            link.title = fileName;
+            link.dataset.objectUrl = url;
+            link.classList.remove('hidden');
+            status.textContent = message;
+            link.onclick = () => setTimeout(() => {
+                if (link.dataset.objectUrl === url) {
+                    URL.revokeObjectURL(url);
+                    delete link.dataset.objectUrl;
+                    link.classList.add('hidden');
+                }
+            }, 60000);
         }
 
         function createWarriorExportAsset(assetType) {
@@ -1682,11 +1827,17 @@
                 }
             });
 
-            assetRoot.name = assetType === 'armor' ? 'Metin2_Zirh_' + state.armorTheme : 'Metin2_Karakter_Rig';
-            assetRoot.userData = assetType === 'armor'
-                ? { equipmentType: 'armor', equipmentSlot: 'body', skeletonRoot: 'Savasci_Rig', armorTheme: state.armorTheme }
-                : { equipmentType: 'character', skeletonRoot: 'Savasci_Rig', animationClips: 10 };
-            return assetRoot;
+            if (assetType === 'armor') {
+                assetRoot.name = 'Metin2_Zirh_' + state.armorTheme;
+                assetRoot.userData = { equipmentType: 'armor', equipmentSlot: 'body', skeletonRoot: 'Savasci_Rig', armorTheme: state.armorTheme };
+                return assetRoot;
+            }
+
+            const characterRoot = new THREE.Group();
+            characterRoot.name = 'Metin2_Karakter_Root';
+            characterRoot.userData = { equipmentType: 'character', skeletonRoot: 'Savasci_Rig', animationClips: 10 };
+            characterRoot.add(assetRoot);
+            return characterRoot;
         }
 
         async function exportWarriorGLB(clickedButton) {
@@ -1700,14 +1851,6 @@
 
             status.classList.remove('hidden');
             const assetType = document.getElementById('export-kind-select').value;
-            if (preparedGLBDownload && preparedGLBDownload.assetType === assetType) {
-                const prepared = preparedGLBDownload;
-                preparedGLBDownload = null;
-                downloadGLB(prepared.blob, prepared.fileName);
-                status.textContent = 'GLB indirildi: ' + prepared.fileName;
-                return;
-            }
-
             button.disabled = true;
             const statusText = {
                 character: 'Karakter ve animasyon klipleri hazırlanıyor...',
@@ -1766,7 +1909,7 @@
                     button.disabled = false;
                     status.textContent = 'GLB dışa aktarımı zaman aşımına uğradı. Tekrar deneyin.';
                 }, 60000);
-                exporter.parse(exportRoot, (result) => {
+                exporter.parse(exportRoot, async (result) => {
                     if (exportFinished) return;
                     exportFinished = true;
                     clearTimeout(exportTimeout);
@@ -1781,17 +1924,20 @@
                                 ? 'metin2_zirh_' + state.armorTheme + '.glb'
                                 : 'metin2_kilic_' + state.swordType + '.glb';
                         if (assetType === 'character') {
-                            preparedGLBDownload = { assetType, blob, fileName };
-                            status.textContent = 'Animasyonlu GLB hazır. İndirmek için GLB İndir düğmesine tekrar bas.';
+                            showGLBDownloadLink(blob, fileName, status, 'Animasyonlu GLB hazır. Yeşil indirme bağlantısına tıkla.');
                         } else {
-                            downloadGLB(blob, fileName);
-                            status.textContent = assetType === 'armor'
-                                ? 'Zırh GLB indirildi; karakter rig eklem isimleri korundu.'
-                                : 'Kılıç GLB indirildi; weapon_r ekipman yuvası metaverisi eklendi.';
+                            showGLBDownloadLink(
+                                blob,
+                                fileName,
+                                status,
+                                assetType === 'armor'
+                                    ? 'Zırh GLB hazır. Yeşil indirme bağlantısına tıkla.'
+                                    : 'Kılıç GLB hazır. Yeşil indirme bağlantısına tıkla.'
+                            );
                         }
                     } catch (error) {
                         console.error('GLB result validation failed:', error);
-                        status.textContent = 'GLB sonucu doğrulanamadı. Konsoldaki hatayı kontrol edin.';
+                        status.textContent = 'GLB sonucu doğrulanamadı (' + error.name + '): ' + error.message;
                     } finally {
                         button.disabled = false;
                     }
@@ -1801,7 +1947,7 @@
                 exportFinished = true;
                 console.error('GLB export failed:', error);
                 button.disabled = false;
-                status.textContent = 'GLB oluşturulamadı. Konsoldaki hatayı kontrol edin.';
+                status.textContent = 'GLB oluşturulamadı (' + error.name + '): ' + error.message;
             }
         }
 
@@ -2974,6 +3120,7 @@
         function changeSwordType(type) {
             state.swordType = type;
             buildSwordGeometry(type);
+            refreshUploadedAssetVisibility();
         }
 
         function changeArmorTheme(theme) {
@@ -3046,6 +3193,7 @@
                 }
                 if (lvlBadge) lvlBadge.innerText = 'Lv.105';
             }
+            refreshUploadedAssetVisibility();
         }
 
         function changeHelmetMode(mode) {
@@ -3054,6 +3202,7 @@
             if (joints.crownGroup) joints.crownGroup.visible = (mode === 'crown' || mode === 'full');
             if (joints.fullVisorGroup) joints.fullVisorGroup.visible = (mode === 'full');
             if (joints.faceFeaturesGroup) joints.faceFeaturesGroup.visible = (mode !== 'full');
+            refreshUploadedAssetVisibility();
         }
 
         function spawnVerticalLightPillars(centerPos, colorHex, count = 6) {
@@ -4577,6 +4726,7 @@
             const elapsedTime = clock.getElapsedTime();
 
             updateWarriorAnimation(rawDt, elapsedTime);
+            updateUploadedCharacterAnimation(rawDt);
             updateCameraPosition(rawDt);
             renderer.render(scene, camera);
         }
