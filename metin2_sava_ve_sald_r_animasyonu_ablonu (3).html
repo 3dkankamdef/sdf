@@ -350,6 +350,7 @@
             animSpeed: 1.00,
             auraActive: false, // Starts at Level 1 without active fire aura until Skill 1 (Hava Kılıcı) is pressed or high-tier preset chosen
             audioEnabled: true,
+            showUploadedModels: false,
             isHoldingAttack: false,
             comboStep: 0,
             comboTimer: 0,
@@ -666,10 +667,10 @@
 
             // 1. Base Realistic Warm Human Skin Tone with Subtle Anatomical Gradients
             const baseGrad = ctx.createLinearGradient(0, 0, 0, 1024);
-            baseGrad.addColorStop(0.0, '#d89b72'); // Forehead warm skin
-            baseGrad.addColorStop(0.48, '#d39066'); // Midface / Cheekbones
-            baseGrad.addColorStop(0.75, '#be7e56'); // Lower face / Jawline contour
-            baseGrad.addColorStop(1.0, '#b57650');
+            baseGrad.addColorStop(0.0, '#c9957d'); // Forehead warm skin
+            baseGrad.addColorStop(0.48, '#c28b74'); // Midface / Cheekbones
+            baseGrad.addColorStop(0.75, '#b77d68'); // Lower face / Jawline contour
+            baseGrad.addColorStop(1.0, '#ad7561');
             ctx.fillStyle = baseGrad;
             ctx.fillRect(0, 0, 1024, 1024);
 
@@ -1209,7 +1210,7 @@
                 const characterRoot = characterAsset.scene;
                 const characterGroups = new Map();
                 characterRoot.traverse((node) => {
-                    if (node.isGroup && node.name) characterGroups.set(node.name, node);
+                    if (node.isObject3D && !node.isMesh && node.name) characterGroups.set(node.name, node);
                 });
 
                 uploadedArmorMeshes = [];
@@ -1249,7 +1250,7 @@
                 refreshUploadedAssetVisibility();
 
                 const status = document.getElementById('header-export-status');
-                status.textContent = 'GitHub GLB karakteri, Keşiş zırhı ve Uzun Kılıç oyuna yüklendi.';
+                status.textContent = 'İçe aktarılan GLB modelleri geçici olarak gizlendi; prosedürel model gösteriliyor.';
                 status.classList.remove('hidden');
                 setTimeout(() => status.classList.add('hidden'), 4500);
             } catch (error) {
@@ -1263,7 +1264,8 @@
         function refreshUploadedAssetVisibility() {
             if (!uploadedCharacterRoot) return;
             const capeToggle = document.getElementById('cape-toggle');
-            const canUseUploadedSet = state.armorTheme === 'monk'
+            const canUseUploadedSet = state.showUploadedModels
+                && state.armorTheme === 'monk'
                 && state.swordType === 'longsword'
                 && state.helmetMode === 'none'
                 && !(capeToggle && capeToggle.checked);
@@ -1316,13 +1318,15 @@
         }
 
         function createMaterials(textures) {
-            // Realistic Warm Human Skin Material (For Muscular Neck, Biceps, Ears, and 5-Finger Articulated Hands)
+            const skinTextures = createSkinTextures();
             materials.humanSkin = new THREE.MeshStandardMaterial({
-                color: 0xd59469,
-                roughness: 0.48,
-                metalness: 0.03,
+                map: skinTextures.color,
+                bumpMap: skinTextures.bump,
+                bumpScale: 0.0008,
+                roughness: 0.67,
+                metalness: 0,
                 envMap: textures.envMap,
-                envMapIntensity: 0.30
+                envMapIntensity: 0.08
             });
 
             // High-Resolution Sculpted Human Face Material (Mapped onto the 3D sculpted head topology)
@@ -1419,6 +1423,51 @@
             });
         }
 
+        function createSkinTextures() {
+            const size = 512;
+            const colorCanvas = document.createElement('canvas');
+            colorCanvas.width = size;
+            colorCanvas.height = size;
+            const colorCtx = colorCanvas.getContext('2d');
+            colorCtx.fillStyle = '#bd927e';
+            colorCtx.fillRect(0, 0, size, size);
+
+            const colorPixels = colorCtx.getImageData(0, 0, size, size);
+            const bumpCanvas = document.createElement('canvas');
+            bumpCanvas.width = size;
+            bumpCanvas.height = size;
+            const bumpCtx = bumpCanvas.getContext('2d');
+            const bumpPixels = bumpCtx.createImageData(size, size);
+            for (let i = 0; i < colorPixels.data.length; i += 4) {
+                const pixel = i / 4;
+                const x = pixel % size;
+                const y = Math.floor(pixel / size);
+                const u = (x / size) * Math.PI * 2;
+                const v = (y / size) * Math.PI * 2;
+                const broadVariation = Math.sin(u * 3 + v * 2) * Math.cos(v * 3 - u);
+                const fineVariation = Math.sin(u * 43 + v * 37) * Math.cos(v * 41 - u * 29);
+                const grain = broadVariation * 2.2 + fineVariation * 1.3;
+                colorPixels.data[i] = THREE.MathUtils.clamp(colorPixels.data[i] + grain + 1, 0, 255);
+                colorPixels.data[i + 1] = THREE.MathUtils.clamp(colorPixels.data[i + 1] + grain * 0.72, 0, 255);
+                colorPixels.data[i + 2] = THREE.MathUtils.clamp(colorPixels.data[i + 2] + grain * 0.58, 0, 255);
+                const pore = Math.sin(u * 67 + v * 59) * Math.cos(v * 61 - u * 73);
+                const height = THREE.MathUtils.clamp(128 + pore * 2.5, 0, 255);
+                bumpPixels.data[i] = height;
+                bumpPixels.data[i + 1] = height;
+                bumpPixels.data[i + 2] = height;
+                bumpPixels.data[i + 3] = 255;
+            }
+            colorCtx.putImageData(colorPixels, 0, 0);
+            bumpCtx.putImageData(bumpPixels, 0, 0);
+
+            const color = new THREE.CanvasTexture(colorCanvas);
+            color.encoding = THREE.sRGBEncoding;
+            color.anisotropy = 8;
+            const bump = new THREE.CanvasTexture(bumpCanvas);
+            bump.anisotropy = 8;
+            return { color, bump };
+        }
+
         function createFlatGroundTemplate(groundTexture) {
             const groundGeo = new THREE.PlaneGeometry(140, 140);
             const groundMat = new THREE.MeshStandardMaterial({
@@ -1433,8 +1482,8 @@
         }
 
         function createSculptedTorsoGeometry() {
-            const radSegs = 36;
-            const heightSegs = 24;
+            const radSegs = 80;
+            const heightSegs = 56;
             const geo = new THREE.CylinderGeometry(1, 1, 0.66, radSegs, heightSegs, false);
             geo.translate(0, 0.33, 0);
 
@@ -1456,8 +1505,8 @@
                 } else {
                     const k = (t - 0.78) / 0.22;
                     const smoothK = k * k * (3 - 2 * k);
-                    widthX = THREE.MathUtils.lerp(0.277, 0.095, smoothK);
-                    depthZ = THREE.MathUtils.lerp(0.158, 0.092, smoothK);
+                    widthX = THREE.MathUtils.lerp(0.277, 0.165, smoothK);
+                    depthZ = THREE.MathUtils.lerp(0.158, 0.112, smoothK);
                 }
 
                 const nx = Math.sin(angle);
@@ -1465,14 +1514,48 @@
                 let x = nx * widthX;
                 let z = nz * depthZ;
 
-                if (nz > 0.2 && t > 0.42 && t < 0.82) {
-                    const pecHeight = Math.sin(((t - 0.42) / 0.40) * Math.PI);
-                    z += Math.max(0, nz - 0.2) * pecHeight * 0.036;
+                const frontWeight = THREE.MathUtils.smoothstep(nz, 0.25, 0.92);
+                if (frontWeight > 0) {
+                    const pecBand = Math.exp(-Math.pow((t - 0.69) / 0.105, 2));
+                    const pecShape = Math.exp(-Math.pow((Math.abs(x) - 0.105) / 0.075, 2));
+                    z += frontWeight * pecBand * pecShape * 0.020;
+                    const clavicleBand = Math.exp(-Math.pow((t - 0.86) / 0.025, 2));
+                    const clavicleShape = Math.exp(-Math.pow((Math.abs(x) - 0.11) / 0.07, 2));
+                    z += frontWeight * clavicleBand * clavicleShape * 0.003;
+
+                    const abdomenBand = THREE.MathUtils.smoothstep(t, 0.12, 0.22)
+                        * (1 - THREE.MathUtils.smoothstep(t, 0.52, 0.61));
+                    const abWidth = Math.exp(-Math.pow((Math.abs(x) - 0.056) / 0.047, 4));
+                    const upperAb = Math.exp(-Math.pow((t - 0.34) / 0.085, 2));
+                    const lowerAb = Math.exp(-Math.pow((t - 0.47) / 0.075, 2));
+                    const abdominalMass = Math.exp(-Math.pow(x / 0.09, 2));
+                    z += frontWeight * abdomenBand * abdominalMass * 0.003;
+                    z += frontWeight * abdomenBand * abWidth * (upperAb + lowerAb) * 0.006;
+                    z -= frontWeight * abdomenBand * Math.exp(-Math.pow(x / 0.024, 2)) * 0.00035;
+
+                    const obliqueBand = THREE.MathUtils.smoothstep(t, 0.16, 0.30)
+                        * (1 - THREE.MathUtils.smoothstep(t, 0.47, 0.58));
+                    z += frontWeight * obliqueBand * Math.pow(Math.abs(nx), 3) * 0.007;
+                    const navel = Math.exp(-Math.pow(x / 0.012, 2) - Math.pow((t - 0.19) / 0.018, 2));
+                    z -= frontWeight * navel * 0.002;
                 }
 
                 pos.setXYZ(i, x, vy, z);
             }
             geo.computeVertexNormals();
+            const normals = geo.attributes.normal;
+            for (let row = 0; row <= heightSegs; row++) {
+                const first = row * (radSegs + 1);
+                const last = first + radSegs;
+                const average = new THREE.Vector3(
+                    normals.getX(first) + normals.getX(last),
+                    normals.getY(first) + normals.getY(last),
+                    normals.getZ(first) + normals.getZ(last)
+                ).normalize();
+                normals.setXYZ(first, average.x, average.y, average.z);
+                normals.setXYZ(last, average.x, average.y, average.z);
+            }
+            normals.needsUpdate = true;
             return geo;
         }
 
@@ -1596,6 +1679,163 @@
             joints.root.traverse((node) => {
                 if (node.isGroup && !node.name) node.name = 'Savasci_Node_' + nodeIndex++;
             });
+            applyUnderwearAppearance(joints.root);
+        }
+
+        function applyUnderwearAppearance(root) {
+            const armorMaterials = new Set([
+                materials.cuirassBody,
+                materials.armorSteel,
+                materials.armorAccentPlate,
+                materials.goldTrim,
+                materials.leather,
+                materials.cape,
+                materials.chainmail,
+                materials.hornBone
+            ]);
+            const skinMeshNames = new Set([
+                'Savasci_Torso_Base',
+                'Savasci_Deltoid_Base_L',
+                'Savasci_Deltoid_Base_R'
+            ]);
+            const animePrint = createAnimeUnderwearTexture();
+            const fabric = new THREE.MeshStandardMaterial({
+                map: animePrint,
+                bumpMap: animePrint,
+                bumpScale: 0.001,
+                roughness: 0.86,
+                metalness: 0
+            });
+
+            root.traverse((node) => {
+                if (!node.isMesh) return;
+                const nodeMaterials = Array.isArray(node.material) ? node.material : [node.material];
+                if (/^Savasci_Thigh_Base_[RL]$/.test(node.name)) {
+                    const geometry = node.geometry.clone();
+                    const sourceIndices = geometry.index.array;
+                    const positions = geometry.attributes.position;
+                    const fabricIndices = [];
+                    const skinIndices = [];
+                    for (let i = 0; i < sourceIndices.length; i += 3) {
+                        const a = sourceIndices[i];
+                        const b = sourceIndices[i + 1];
+                        const c = sourceIndices[i + 2];
+                        const lowestY = Math.min(positions.getY(a), positions.getY(b), positions.getY(c));
+                        const target = lowestY >= 0.11 ? fabricIndices : skinIndices;
+                        target.push(a, b, c);
+                    }
+                    geometry.setIndex(fabricIndices.concat(skinIndices));
+                    geometry.clearGroups();
+                    geometry.addGroup(0, fabricIndices.length, 1);
+                    geometry.addGroup(fabricIndices.length, skinIndices.length, 0);
+                    node.geometry = geometry;
+                    node.material = [materials.humanSkin, fabric];
+                    return;
+                }
+                if (node.name === 'Savasci_Pelvis_Base') {
+                    node.material = fabric;
+                    return;
+                }
+
+                const skinBase = skinMeshNames.has(node.name)
+                    || /Savasci_(Thigh|Shin|Foot|Toe)_Base_[RL]/.test(node.name)
+                    || nodeMaterials.includes(materials.chainmail);
+                if (skinBase) {
+                    node.material = materials.humanSkin;
+                } else if (nodeMaterials.some((material) => armorMaterials.has(material))) {
+                    node.visible = false;
+                }
+            });
+
+            const hips = root.getObjectByName('Savasci_hips');
+            if (!hips) throw new Error('Karakter riginde Savasci_hips bulunamadı.');
+
+            const underwear = new THREE.Group();
+            underwear.name = 'Savasci_BoxerShorts';
+            underwear.userData = { clothingType: 'underwear', clothingSlot: 'underwear' };
+            const waistbandMaterial = new THREE.MeshStandardMaterial({ color: 0x17243c, roughness: 0.9 });
+            const waistband = new THREE.Mesh(new THREE.TorusGeometry(0.179, 0.006, 8, 32), waistbandMaterial);
+            waistband.name = 'BoxerShorts_Waistband';
+            waistband.rotation.x = Math.PI / 2;
+            waistband.scale.set(1, 0.82, 1);
+            waistband.position.y = 0.069;
+            underwear.add(waistband);
+            hips.add(underwear);
+        }
+
+        function createAnimeUnderwearTexture() {
+            const size = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#263858';
+            ctx.fillRect(0, 0, size, size);
+
+            const drawSpark = (x, y, radius, color) => {
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(x, y - radius);
+                ctx.lineTo(x + radius * 0.24, y - radius * 0.24);
+                ctx.lineTo(x + radius, y);
+                ctx.lineTo(x + radius * 0.24, y + radius * 0.24);
+                ctx.lineTo(x, y + radius);
+                ctx.lineTo(x - radius * 0.24, y + radius * 0.24);
+                ctx.lineTo(x - radius, y);
+                ctx.lineTo(x - radius * 0.24, y - radius * 0.24);
+                ctx.closePath();
+                ctx.fill();
+            };
+
+            for (let y = 0; y < size; y += 128) {
+                for (let x = 0; x < size; x += 128) {
+                    const cx = x + 64;
+                    const cy = y + 65;
+                    ctx.fillStyle = '#f3c7c8';
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy + 2, 27, 30, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#f5eee8';
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 29, cy - 5);
+                    ctx.quadraticCurveTo(cx - 32, cy - 37, cx - 2, cy - 34);
+                    ctx.quadraticCurveTo(cx + 34, cy - 38, cx + 29, cy - 4);
+                    ctx.lineTo(cx + 12, cy - 14);
+                    ctx.lineTo(cx + 2, cy - 3);
+                    ctx.lineTo(cx - 8, cy - 15);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.fillStyle = '#32446c';
+                    ctx.beginPath();
+                    ctx.ellipse(cx - 10, cy + 3, 3.5, 5.5, 0, 0, Math.PI * 2);
+                    ctx.ellipse(cx + 10, cy + 3, 3.5, 5.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#b76c78';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 4, cy + 17);
+                    ctx.quadraticCurveTo(cx, cy + 20, cx + 4, cy + 17);
+                    ctx.stroke();
+
+                    drawSpark(x + 16, y + 22, 8, '#f4d68e');
+                    drawSpark(x + 108, y + 105, 7, '#8dd4d0');
+                    ctx.strokeStyle = 'rgba(248,225,207,0.56)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy + 1, 34, -0.3, Math.PI + 0.3);
+                    ctx.stroke();
+                }
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(2, 1);
+            texture.anisotropy = 8;
+            return texture;
         }
 
         function snapshotObjectTransforms(root) {
@@ -1797,6 +2037,10 @@
             if (targetRing) targetRing.parent.remove(targetRing);
             const sword = assetRoot.getObjectByName('Savasci_Kilic');
             if (sword) sword.parent.remove(sword);
+            if (assetType === 'character' && uploadedCharacterRoot) {
+                const uploadedModel = assetRoot.getObjectByName(uploadedCharacterRoot.name || 'Metin2_Karakter_Root');
+                if (uploadedModel && uploadedModel.parent) uploadedModel.parent.remove(uploadedModel);
+            }
 
             const armorMaterials = new Set([
                 materials.cuirassBody,
@@ -1813,9 +2057,10 @@
                 if (!node.isMesh) return;
                 const nodeMaterials = Array.isArray(node.material) ? node.material : [node.material];
                 const isArmor = nodeMaterials.some((material) => armorMaterials.has(material));
+                const isUnderwearThigh = /^Savasci_Thigh_Base_[RL]$/.test(node.name);
+                const isUnderwearGarment = node.name === 'Savasci_Pelvis_Base';
                 const isBodyUnderlay = node.name === 'Savasci_Torso_Base'
-                    || node.name === 'Savasci_Pelvis_Base'
-                    || node.name.includes('_Base_')
+                    || (!isUnderwearThigh && !isUnderwearGarment && node.name.includes('_Base_'))
                     || nodeMaterials.includes(materials.chainmail);
 
                 if (assetType === 'armor') {
@@ -2237,17 +2482,30 @@
             return geo;
         }
 
-        function createLimbSegmentGeometry(topR, botR, length, bulge = 0.16) {
-            const geo = new THREE.CylinderGeometry(topR, botR, length, 18, 10);
+        function createLimbSegmentGeometry(topR, botR, length, bulge = 0.16, radialSegments = 24, heightSegments = 14) {
+            const geo = new THREE.CylinderGeometry(topR, botR, length, radialSegments, heightSegments);
             const pos = geo.attributes.position;
             for (let i = 0; i < pos.count; i++) {
                 let x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
                 const normY = (y + length * 0.5) / length;
                 const muscleCurve = Math.sin(normY * Math.PI) * bulge;
                 const scale = 1.0 + muscleCurve;
-                pos.setXYZ(i, x * scale, y, z * (scale * 1.06));
+                pos.setXYZ(i, x * scale * 0.96, y, z * scale * 1.04);
             }
             geo.computeVertexNormals();
+            const normals = geo.attributes.normal;
+            for (let row = 0; row <= heightSegments; row++) {
+                const first = row * (radialSegments + 1);
+                const last = first + radialSegments;
+                const average = new THREE.Vector3(
+                    normals.getX(first) + normals.getX(last),
+                    normals.getY(first) + normals.getY(last),
+                    normals.getZ(first) + normals.getZ(last)
+                ).normalize();
+                normals.setXYZ(first, average.x, average.y, average.z);
+                normals.setXYZ(last, average.x, average.y, average.z);
+            }
+            normals.needsUpdate = true;
             return geo;
         }
 
@@ -2408,7 +2666,10 @@
             joints['shoulder' + label] = shoulder;
 
             // Smooth human deltoid shoulder cap (No chainmail z-fighting against bicep skin!)
-            const deltoidCap = new THREE.Mesh(new THREE.SphereGeometry(0.068, 16, 14), materials.armorAccentPlate);
+            const deltoidCap = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 28), materials.humanSkin);
+            deltoidCap.name = 'Savasci_Deltoid_Base_' + label;
+            deltoidCap.scale.set(0.078, 0.073, 0.072);
+            deltoidCap.position.set(-side * 0.030, -0.010, 0);
             shoulder.add(deltoidCap);
 
             // 3-Tier Symmetrical Pauldrons
@@ -2445,9 +2706,9 @@
             pauldronGroup.add(shoulderSpike);
 
             // Exposed Muscular Human Biceps & Triceps (Clean radius so zero black sawtooth clipping!)
-            const upperArmGeo = createLimbSegmentGeometry(0.064, 0.054, 0.28, 0.20);
+            const upperArmGeo = createLimbSegmentGeometry(0.064, 0.054, 0.31, 0.20, 32, 16);
             const upperArmSkin = new THREE.Mesh(upperArmGeo, materials.humanSkin);
-            upperArmSkin.position.y = -0.14;
+            upperArmSkin.position.y = -0.15;
             upperArmSkin.castShadow = true;
             shoulder.add(upperArmSkin);
 
@@ -2462,7 +2723,7 @@
             shoulder.add(elbow);
             joints['elbow' + label] = elbow;
 
-            const elbowJointSkin = new THREE.Mesh(new THREE.SphereGeometry(0.052, 14, 12), materials.humanSkin);
+            const elbowJointSkin = new THREE.Mesh(new THREE.SphereGeometry(0.045, 24, 18), materials.humanSkin);
             elbow.add(elbowJointSkin);
 
             // Muscular Forearm + Leather/Steel Vambrace Bracer (Radius 0.068 > Forearm 0.056 so zero z-fighting!)
@@ -2507,7 +2768,7 @@
             joints.hips.add(thigh);
             joints['thigh' + label] = thigh;
 
-            const thighGeo = createLimbSegmentGeometry(0.098, 0.076, 0.44, 0.18);
+            const thighGeo = createLimbSegmentGeometry(0.098, 0.076, 0.44, 0.18, 32, 16);
             const thighMesh = new THREE.Mesh(thighGeo, materials.chainmail);
             thighMesh.name = 'Savasci_Thigh_Base_' + label;
             thighMesh.position.y = -0.22;
@@ -2531,6 +2792,11 @@
             knee.position.set(0, -0.44, 0);
             thigh.add(knee);
             joints['knee' + label] = knee;
+
+            const kneeSkin = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 20), materials.humanSkin);
+            kneeSkin.name = 'Savasci_Knee_Base_' + label;
+            kneeSkin.scale.set(0.060, 0.062, 0.060);
+            knee.add(kneeSkin);
 
             const kneeCap = new THREE.Mesh(new THREE.OctahedronGeometry(0.066, 1), materials.goldTrim);
             kneeCap.scale.set(1.05, 1.35, 0.75);
