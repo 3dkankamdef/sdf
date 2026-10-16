@@ -302,7 +302,7 @@
             animSpeed: 1.00,
             auraActive: false, // Starts at Level 1 without active fire aura until Skill 1 (Hava Kılıcı) is pressed or high-tier preset chosen
             audioEnabled: true,
-            anatomyView: true,
+            anatomyView: false,
             showUploadedModels: false,
             isHoldingAttack: false,
             comboStep: 0,
@@ -345,7 +345,7 @@
             prevY: 0,
             shakeIntensity: 0
         };
-        let activeCameraView = 'fullbody';
+        let activeCameraView = 'default';
 
         const materials = {};
         let audioCtx = null;
@@ -3265,7 +3265,7 @@
                     node.material = materials.humanSkin;
                 } else if (nodeMaterials.some((material) => armorMaterials.has(material))) {
                     node.userData.anatomyArmor = true;
-                    node.visible = false;
+                    node.visible = !state.anatomyView;
                 }
             });
 
@@ -6836,7 +6836,7 @@
 
         window.onload = function () {
             initScene();
-            setCameraView('fullbody');
+            setCameraView('default');
             animate();
         };
     </script>
