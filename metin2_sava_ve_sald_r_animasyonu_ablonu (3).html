@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Metin2 Bedensel Savaşçı - Gerçekçi İnsan & Kılıç Animasyon Şablonu</title>
+    <title>Metin2 Bedensel Savaşçı - Prosedürel İnsan Detayları</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -139,6 +139,7 @@
             <div>
                 <div class="flex items-center gap-1.5">
                     <h1 class="font-rpg text-[11px] sm:text-sm font-bold text-amber-300 tracking-wider">BEDENSEL SAVAŞÇI</h1>
+                    <span class="rounded border border-cyan-300/60 bg-cyan-400/10 px-1 py-0.5 text-[7px] font-black tracking-wider text-cyan-200">PROCEDURAL HUMAN · V4</span>
                     <span id="aura-badge" class="hidden text-[8px] px-1.5 py-0.5 rounded-full bg-orange-500/30 border border-amber-400/80 text-amber-200 font-bold animate-pulse">HAVA KILICI M1</span>
                 </div>
                 <div class="w-28 sm:w-44 space-y-1 mt-1">
@@ -152,10 +153,12 @@
             </div>
         </div>
 
-        <div class="rpg-panel rounded-xl p-1 flex items-center gap-1 pointer-events-auto">
+        <div class="rpg-panel rounded-xl p-1 flex flex-wrap items-center justify-end gap-1 pointer-events-auto max-w-full">
             <button onclick="setCameraView('default')" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-700/70 transition">Aksiyon</button>
+            <button onclick="setCameraView('fullbody')" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 hover:bg-cyan-500/20 hover:text-cyan-200 border border-slate-700/70 transition">Tam Boy</button>
             <button onclick="setCameraView('closeup')" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-700/70 transition">Yüz & Zırh</button>
             <button onclick="setCameraView('hand')" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-700/70 transition">El & Silah</button>
+            <button id="anatomy-toggle-btn" onclick="toggleAnatomyView()" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-cyan-500/15 text-cyan-100 border border-cyan-300/50 hover:bg-cyan-400/25 transition" aria-pressed="true">Zırhı Göster</button>
             <button id="sound-btn" onclick="toggleAudio()" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 text-amber-300 border border-slate-700/70 transition" title="Ses Efektleri">🔊</button>
             <button id="toggle-panel-btn" onclick="toggleInspector()" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500/30 transition flex items-center gap-1">
                 <span>⚙️ Ekipman</span>
@@ -350,6 +353,7 @@
             animSpeed: 1.00,
             auraActive: false, // Starts at Level 1 without active fire aura until Skill 1 (Hava Kılıcı) is pressed or high-tier preset chosen
             audioEnabled: true,
+            anatomyView: true,
             showUploadedModels: false,
             isHoldingAttack: false,
             comboStep: 0,
@@ -377,13 +381,13 @@
 
         const camState = {
             theta: 0.32,
-            phi: 1.22,
-            radius: 4.9,
-            targetRadius: 4.9,
-            fov: 40,
-            targetFov: 40,
-            lookAtOffset: new THREE.Vector3(0, 1.24, 0),
-            targetLookAt: new THREE.Vector3(0, 1.24, 0),
+            phi: 1.28,
+            radius: 3.6,
+            targetRadius: 3.6,
+            fov: 38,
+            targetFov: 38,
+            lookAtOffset: new THREE.Vector3(0, 1.02, 0),
+            targetLookAt: new THREE.Vector3(0, 1.02, 0),
             punchOffset: new THREE.Vector3(),
             punchVel: new THREE.Vector3(),
             isDragging: false,
@@ -392,6 +396,7 @@
             prevY: 0,
             shakeIntensity: 0
         };
+        let activeCameraView = 'fullbody';
 
         const materials = {};
         let audioCtx = null;
@@ -702,9 +707,9 @@
 
             // 3. Realistic Masculine 5-O'Clock Stubble / Short Groomed Warrior Beard Shading (Soft & Natural, NO black triangle!)
             const beardGrad = ctx.createRadialGradient(512, 760, 40, 512, 740, 310);
-            beardGrad.addColorStop(0.0, 'rgba(38, 26, 20, 0.42)');
-            beardGrad.addColorStop(0.55, 'rgba(42, 28, 22, 0.28)');
-            beardGrad.addColorStop(0.82, 'rgba(42, 28, 22, 0.08)');
+            beardGrad.addColorStop(0.0, 'rgba(38, 26, 20, 0.12)');
+            beardGrad.addColorStop(0.55, 'rgba(42, 28, 22, 0.08)');
+            beardGrad.addColorStop(0.82, 'rgba(42, 28, 22, 0.025)');
             beardGrad.addColorStop(1.0, 'rgba(42, 28, 22, 0)');
             ctx.fillStyle = beardGrad;
             ctx.beginPath();
@@ -712,8 +717,8 @@
             ctx.fill();
 
             // Fine individual hair follicles in the beard/mustache zone
-            ctx.strokeStyle = 'rgba(28, 18, 14, 0.32)';
-            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = 'rgba(28, 18, 14, 0.12)';
+            ctx.lineWidth = 1.2;
             for (let i = 0; i < 2200; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const radX = Math.random() * 255;
@@ -731,8 +736,8 @@
 
             // Subtle Mustache Shadow above upper lip
             const stacheGrad = ctx.createRadialGradient(512, 652, 8, 512, 658, 118);
-            stacheGrad.addColorStop(0, 'rgba(32, 20, 15, 0.48)');
-            stacheGrad.addColorStop(0.7, 'rgba(32, 20, 15, 0.22)');
+            stacheGrad.addColorStop(0, 'rgba(32, 20, 15, 0.12)');
+            stacheGrad.addColorStop(0.7, 'rgba(32, 20, 15, 0.06)');
             stacheGrad.addColorStop(1, 'rgba(32, 20, 15, 0)');
             ctx.fillStyle = stacheGrad;
             ctx.beginPath();
@@ -790,7 +795,7 @@
             ctx.fill();
 
             // Center mouth line (stern expression)
-            ctx.strokeStyle = 'rgba(52, 20, 14, 0.82)';
+            ctx.strokeStyle = 'rgba(52, 20, 14, 0.52)';
             ctx.lineWidth = 3.5;
             ctx.beginPath();
             ctx.moveTo(424, 688);
@@ -800,114 +805,24 @@
 
             // Chin cleft / under-lip shadow
             const chinShadow = ctx.createRadialGradient(512, 735, 5, 512, 735, 45);
-            chinShadow.addColorStop(0, 'rgba(75, 34, 20, 0.38)');
+            chinShadow.addColorStop(0, 'rgba(75, 34, 20, 0.12)');
             chinShadow.addColorStop(1, 'rgba(75, 34, 20, 0)');
             ctx.fillStyle = chinShadow;
             ctx.beginPath();
             ctx.arc(512, 735, 45, 0, Math.PI * 2);
             ctx.fill();
 
-            // 6. Realistic Detailed Human Eyes & Fierce Masculine Eyebrows
+            // Soft socket shading; the eyes and brows are modeled in 3D.
             [-1, 1].forEach(side => {
                 const ex = 512 + side * 136;
                 const ey = 432;
-
-                // Eye socket ambient shading
                 const socketGrad = ctx.createRadialGradient(ex, ey, 18, ex, ey, 86);
-                socketGrad.addColorStop(0, 'rgba(78, 36, 22, 0.42)');
-                socketGrad.addColorStop(0.65, 'rgba(92, 44, 26, 0.22)');
+                socketGrad.addColorStop(0, 'rgba(78, 36, 22, 0.14)');
+                socketGrad.addColorStop(0.65, 'rgba(92, 44, 26, 0.07)');
                 socketGrad.addColorStop(1, 'rgba(92, 44, 26, 0)');
                 ctx.fillStyle = socketGrad;
                 ctx.beginPath();
                 ctx.arc(ex, ey, 86, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Almond Eye Clipping Path (Sclera + Iris + Pupil)
-                ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(ex - side * 56, ey + 4);
-                ctx.quadraticCurveTo(ex - side * 12, ey - 28, ex + side * 52, ey + 2);
-                ctx.quadraticCurveTo(ex + side * 10, ey + 24, ex - side * 56, ey + 4);
-                ctx.closePath();
-                ctx.clip();
-
-                // Sclera with realistic soft corner shadows
-                const scleraGrad = ctx.createRadialGradient(ex, ey, 12, ex, ey, 56);
-                scleraGrad.addColorStop(0, '#f8fafc');
-                scleraGrad.addColorStop(0.7, '#e2e8f0');
-                scleraGrad.addColorStop(1, '#94a3b8');
-                ctx.fillStyle = scleraGrad;
-                ctx.fillRect(ex - 65, ey - 35, 130, 70);
-
-                // Iris (Deep Warm Amber-Brown Warrior Eyes)
-                const irisX = ex - side * 4;
-                const irisY = ey - 1;
-                const irisGrad = ctx.createRadialGradient(irisX, irisY, 4, irisX, irisY, 24);
-                irisGrad.addColorStop(0, '#1e0d06');
-                irisGrad.addColorStop(0.35, '#6b3410');
-                irisGrad.addColorStop(0.78, '#451a03');
-                irisGrad.addColorStop(1, '#0f0704');
-                ctx.fillStyle = irisGrad;
-                ctx.beginPath();
-                ctx.arc(irisX, irisY, 24, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Pupil
-                ctx.fillStyle = '#050505';
-                ctx.beginPath();
-                ctx.arc(irisX, irisY, 9.5, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Corneal Specular Catchlight (brings the human eye to life!)
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
-                ctx.beginPath();
-                ctx.arc(irisX - 6, irisY - 6, 4.2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-                ctx.beginPath();
-                ctx.arc(irisX + 7, irisY + 6, 2.2, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Upper eyelid shadow across top of eyeball
-                const lidShadow = ctx.createLinearGradient(ex, ey - 26, ex, ey - 2);
-                lidShadow.addColorStop(0, 'rgba(15, 8, 5, 0.65)');
-                lidShadow.addColorStop(1, 'rgba(15, 8, 5, 0)');
-                ctx.fillStyle = lidShadow;
-                ctx.fillRect(ex - 65, ey - 30, 130, 28);
-                ctx.restore();
-
-                // Upper Eyelash Line & Eyelid Crease
-                ctx.strokeStyle = '#1c100b';
-                ctx.lineWidth = 5.5;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.moveTo(ex - side * 56, ey + 4);
-                ctx.quadraticCurveTo(ex - side * 12, ey - 28, ex + side * 52, ey + 2);
-                ctx.stroke();
-
-                ctx.strokeStyle = 'rgba(68, 30, 18, 0.55)';
-                ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.moveTo(ex - side * 52, ey + 5);
-                ctx.quadraticCurveTo(ex + side * 10, ey + 24, ex + side * 50, ey + 3);
-                ctx.stroke();
-
-                // Upper eyelid fold line
-                ctx.strokeStyle = 'rgba(85, 38, 22, 0.55)';
-                ctx.lineWidth = 2.2;
-                ctx.beginPath();
-                ctx.moveTo(ex - side * 54, ey - 8);
-                ctx.quadraticCurveTo(ex - side * 10, ey - 38, ex + side * 48, ey - 10);
-                ctx.stroke();
-
-                // Fierce Masculine Arched Eyebrow (Natural feathered dark brown/black hair strokes)
-                ctx.fillStyle = '#1a110d';
-                ctx.beginPath();
-                ctx.moveTo(ex - side * 66, ey - 30);
-                ctx.quadraticCurveTo(ex - side * 15, ey - 58, ex + side * 54, ey - 48);
-                ctx.lineTo(ex + side * 64, ey - 28);
-                ctx.quadraticCurveTo(ex - side * 10, ey - 38, ex - side * 66, ey - 16);
-                ctx.closePath();
                 ctx.fill();
             });
 
@@ -1254,10 +1169,8 @@
                 status.classList.remove('hidden');
                 setTimeout(() => status.classList.add('hidden'), 4500);
             } catch (error) {
-                console.error('Uploaded GLB integration failed; using procedural character:', error);
-                const status = document.getElementById('header-export-status');
-                status.textContent = 'GLB modelleri yüklenemedi; prosedürel karakter kullanılıyor: ' + error.message;
-                status.classList.remove('hidden');
+                const detail = error instanceof Error ? error.message : String(error);
+                console.warn('Optional uploaded GLB unavailable; using procedural character:', detail);
             }
         }
 
@@ -1319,23 +1232,31 @@
 
         function createMaterials(textures) {
             const skinTextures = createSkinTextures();
-            materials.humanSkin = new THREE.MeshStandardMaterial({
+            materials.humanSkin = new THREE.MeshPhysicalMaterial({
                 map: skinTextures.color,
                 bumpMap: skinTextures.bump,
-                bumpScale: 0.0008,
-                roughness: 0.67,
+                bumpScale: 0.0015,
+                roughnessMap: skinTextures.roughness,
+                roughness: 0.74,
                 metalness: 0,
                 envMap: textures.envMap,
-                envMapIntensity: 0.08
+                envMapIntensity: 0.12,
+                clearcoat: 0.025,
+                clearcoatRoughness: 0.78
             });
 
             // High-Resolution Sculpted Human Face Material (Mapped onto the 3D sculpted head topology)
-            materials.humanFace = new THREE.MeshStandardMaterial({
+            materials.humanFace = new THREE.MeshPhysicalMaterial({
                 map: textures.faceTexture,
-                roughness: 0.45,
-                metalness: 0.03,
+                bumpMap: skinTextures.bump,
+                bumpScale: 0.00035,
+                roughnessMap: skinTextures.roughness,
+                roughness: 0.63,
+                metalness: 0,
                 envMap: textures.envMap,
-                envMapIntensity: 0.28
+                envMapIntensity: 0.16,
+                clearcoat: 0.018,
+                clearcoatRoughness: 0.82
             });
 
             // Cuirass Torso Material with 1024x1024 Painted Armor Reliefs (No clipping boxes!)
@@ -1393,7 +1314,7 @@
             });
 
             materials.hair = new THREE.MeshStandardMaterial({
-                color: 0x160f0b,
+                color: 0x21130e,
                 metalness: 0.08,
                 roughness: 0.68
             });
@@ -1424,7 +1345,61 @@
         }
 
         function createSkinTextures() {
-            const size = 512;
+            const size = 1024;
+            function createNoiseTile(resolution, seed) {
+                const values = new Float32Array(resolution * resolution);
+                let value = seed;
+                for (let i = 0; i < values.length; i++) {
+                    value = (Math.imul(value, 1664525) + 1013904223) >>> 0;
+                    values[i] = (value / 4294967296) * 2 - 1;
+                }
+                return values;
+            }
+
+            function sampleNoiseTile(tile, resolution, x, y) {
+                const px = (x / size) * resolution;
+                const py = (y / size) * resolution;
+                const x0 = Math.floor(px) % resolution;
+                const y0 = Math.floor(py) % resolution;
+                const x1 = (x0 + 1) % resolution;
+                const y1 = (y0 + 1) % resolution;
+                const tx = px - Math.floor(px);
+                const ty = py - Math.floor(py);
+                const sx = tx * tx * (3 - 2 * tx);
+                const sy = ty * ty * (3 - 2 * ty);
+                const top = THREE.MathUtils.lerp(tile[y0 * resolution + x0], tile[y0 * resolution + x1], sx);
+                const bottom = THREE.MathUtils.lerp(tile[y1 * resolution + x0], tile[y1 * resolution + x1], sx);
+                return THREE.MathUtils.lerp(top, bottom, sy);
+            }
+
+            function samplePoreField(resolution, x, y) {
+                const px = (x / size) * resolution;
+                const py = (y / size) * resolution;
+                const cellX = Math.floor(px);
+                const cellY = Math.floor(py);
+                let nearest = 1;
+
+                for (let oy = -1; oy <= 1; oy++) {
+                    for (let ox = -1; ox <= 1; ox++) {
+                        const wrappedX = ((cellX + ox) % resolution + resolution) % resolution;
+                        const wrappedY = ((cellY + oy) % resolution + resolution) % resolution;
+                        let hash = Math.imul(wrappedX + 1, 374761393) + Math.imul(wrappedY + 1, 668265263);
+                        hash = Math.imul(hash ^ (hash >>> 13), 1274126177);
+                        const seedX = (hash >>> 0) / 4294967296;
+                        hash = Math.imul(hash ^ (hash >>> 16), 2246822519);
+                        const seedY = (hash >>> 0) / 4294967296;
+                        const dx = cellX + ox + 0.18 + seedX * 0.64 - px;
+                        const dy = cellY + oy + 0.18 + seedY * 0.64 - py;
+                        nearest = Math.min(nearest, Math.hypot(dx, dy));
+                    }
+                }
+                return nearest;
+            }
+
+            const broadNoise = createNoiseTile(4, 371);
+            const midNoise = createNoiseTile(24, 1597);
+            const fineNoise = createNoiseTile(192, 7919);
+            const poreNoise = createNoiseTile(384, 104729);
             const colorCanvas = document.createElement('canvas');
             colorCanvas.width = size;
             colorCanvas.height = size;
@@ -1438,34 +1413,49 @@
             bumpCanvas.height = size;
             const bumpCtx = bumpCanvas.getContext('2d');
             const bumpPixels = bumpCtx.createImageData(size, size);
+            const roughnessCanvas = document.createElement('canvas');
+            roughnessCanvas.width = size;
+            roughnessCanvas.height = size;
+            const roughnessCtx = roughnessCanvas.getContext('2d');
+            const roughnessPixels = roughnessCtx.createImageData(size, size);
             for (let i = 0; i < colorPixels.data.length; i += 4) {
                 const pixel = i / 4;
                 const x = pixel % size;
                 const y = Math.floor(pixel / size);
-                const u = (x / size) * Math.PI * 2;
-                const v = (y / size) * Math.PI * 2;
-                const broadVariation = Math.sin(u * 3 + v * 2) * Math.cos(v * 3 - u);
-                const fineVariation = Math.sin(u * 43 + v * 37) * Math.cos(v * 41 - u * 29);
-                const grain = broadVariation * 2.2 + fineVariation * 1.3;
-                colorPixels.data[i] = THREE.MathUtils.clamp(colorPixels.data[i] + grain + 1, 0, 255);
-                colorPixels.data[i + 1] = THREE.MathUtils.clamp(colorPixels.data[i + 1] + grain * 0.72, 0, 255);
-                colorPixels.data[i + 2] = THREE.MathUtils.clamp(colorPixels.data[i + 2] + grain * 0.58, 0, 255);
-                const pore = Math.sin(u * 67 + v * 59) * Math.cos(v * 61 - u * 73);
-                const height = THREE.MathUtils.clamp(128 + pore * 2.5, 0, 255);
+                const broadVariation = sampleNoiseTile(broadNoise, 4, x, y);
+                const midVariation = sampleNoiseTile(midNoise, 24, x, y);
+                const fineVariation = sampleNoiseTile(fineNoise, 96, x, y);
+                const poreGrain = sampleNoiseTile(poreNoise, 256, x, y);
+                const poreDistance = samplePoreField(512, x, y);
+                const poreIndent = Math.exp(-Math.pow(poreDistance / 0.13, 2));
+                const poreRim = Math.exp(-Math.pow((poreDistance - 0.19) / 0.055, 2));
+                const grain = broadVariation * 2.2 + midVariation * 1.2 + fineVariation * 0.55 + poreGrain * 0.22 - poreIndent * 0.75;
+                colorPixels.data[i] = THREE.MathUtils.clamp(colorPixels.data[i] + grain + 1.2, 0, 255);
+                colorPixels.data[i + 1] = THREE.MathUtils.clamp(colorPixels.data[i + 1] + grain * 0.78 + midVariation * 0.25 - poreIndent * 1.2, 0, 255);
+                colorPixels.data[i + 2] = THREE.MathUtils.clamp(colorPixels.data[i + 2] + grain * 0.62 + broadVariation * 0.35 - poreIndent * 1.6, 0, 255);
+                const height = THREE.MathUtils.clamp(128 + midVariation * 2.0 + fineVariation * 3.2 + poreGrain * 1.4 - poreIndent * 11 + poreRim * 2.6, 0, 255);
                 bumpPixels.data[i] = height;
                 bumpPixels.data[i + 1] = height;
                 bumpPixels.data[i + 2] = height;
                 bumpPixels.data[i + 3] = 255;
+                const roughnessValue = THREE.MathUtils.clamp(222 + broadVariation * 7 + midVariation * 5 + fineVariation * 3 + poreIndent * 12, 0, 255);
+                roughnessPixels.data[i] = roughnessValue;
+                roughnessPixels.data[i + 1] = roughnessValue;
+                roughnessPixels.data[i + 2] = roughnessValue;
+                roughnessPixels.data[i + 3] = 255;
             }
             colorCtx.putImageData(colorPixels, 0, 0);
             bumpCtx.putImageData(bumpPixels, 0, 0);
+            roughnessCtx.putImageData(roughnessPixels, 0, 0);
 
             const color = new THREE.CanvasTexture(colorCanvas);
             color.encoding = THREE.sRGBEncoding;
             color.anisotropy = 8;
             const bump = new THREE.CanvasTexture(bumpCanvas);
             bump.anisotropy = 8;
-            return { color, bump };
+            const roughness = new THREE.CanvasTexture(roughnessCanvas);
+            roughness.anisotropy = 8;
+            return { color, bump, roughness };
         }
 
         function createFlatGroundTemplate(groundTexture) {
@@ -1505,39 +1495,58 @@
                 } else {
                     const k = (t - 0.78) / 0.22;
                     const smoothK = k * k * (3 - 2 * k);
-                    widthX = THREE.MathUtils.lerp(0.277, 0.165, smoothK);
-                    depthZ = THREE.MathUtils.lerp(0.158, 0.112, smoothK);
+                    widthX = THREE.MathUtils.lerp(0.277, 0.088, smoothK);
+                    depthZ = THREE.MathUtils.lerp(0.158, 0.081, smoothK);
                 }
 
                 const nx = Math.sin(angle);
                 const nz = Math.cos(angle);
-                let x = nx * widthX;
-                let z = nz * depthZ;
+                let x = nx * widthX * distFromAxis;
+                let z = nz * depthZ * distFromAxis;
 
                 const frontWeight = THREE.MathUtils.smoothstep(nz, 0.25, 0.92);
                 if (frontWeight > 0) {
-                    const pecBand = Math.exp(-Math.pow((t - 0.69) / 0.105, 2));
-                    const pecShape = Math.exp(-Math.pow((Math.abs(x) - 0.105) / 0.075, 2));
-                    z += frontWeight * pecBand * pecShape * 0.020;
-                    const clavicleBand = Math.exp(-Math.pow((t - 0.86) / 0.025, 2));
-                    const clavicleShape = Math.exp(-Math.pow((Math.abs(x) - 0.11) / 0.07, 2));
-                    z += frontWeight * clavicleBand * clavicleShape * 0.003;
+                    const pecBand = Math.exp(-Math.pow((t - 0.69) / 0.12, 2));
+                    const pecShape = Math.exp(-Math.pow((Math.abs(x) - 0.098) / 0.072, 2));
+                    z += frontWeight * pecBand * pecShape * 0.025;
+                    const pecFold = Math.exp(-Math.pow((t - 0.585) / 0.022, 2))
+                        * Math.exp(-Math.pow((Math.abs(x) - 0.104) / 0.078, 2));
+                    z -= frontWeight * pecFold * 0.0025;
+                    const sternum = Math.exp(-Math.pow(x / 0.014, 2))
+                        * Math.exp(-Math.pow((t - 0.70) / 0.16, 2));
+                    z -= frontWeight * sternum * 0.0018;
+                    const clavicleBand = Math.exp(-Math.pow((t - 0.855) / 0.020, 2));
+                    const clavicleShape = Math.exp(-Math.pow((Math.abs(x) - 0.108) / 0.074, 2));
+                    z += frontWeight * clavicleBand * clavicleShape * 0.005;
+                    const supraclavicular = Math.exp(-Math.pow(x / 0.055, 2))
+                        * Math.exp(-Math.pow((t - 0.84) / 0.035, 2));
+                    z -= frontWeight * supraclavicular * 0.0022;
 
                     const abdomenBand = THREE.MathUtils.smoothstep(t, 0.12, 0.22)
                         * (1 - THREE.MathUtils.smoothstep(t, 0.52, 0.61));
-                    const abWidth = Math.exp(-Math.pow((Math.abs(x) - 0.056) / 0.047, 4));
-                    const upperAb = Math.exp(-Math.pow((t - 0.34) / 0.085, 2));
-                    const lowerAb = Math.exp(-Math.pow((t - 0.47) / 0.075, 2));
-                    const abdominalMass = Math.exp(-Math.pow(x / 0.09, 2));
-                    z += frontWeight * abdomenBand * abdominalMass * 0.003;
-                    z += frontWeight * abdomenBand * abWidth * (upperAb + lowerAb) * 0.006;
-                    z -= frontWeight * abdomenBand * Math.exp(-Math.pow(x / 0.024, 2)) * 0.00035;
+                    const abWidth = Math.exp(-Math.pow((Math.abs(x) - 0.057) / 0.038, 4));
+                    const abRows = [
+                        Math.exp(-Math.pow((t - 0.34) / 0.050, 2)),
+                        Math.exp(-Math.pow((t - 0.435) / 0.047, 2)),
+                        Math.exp(-Math.pow((t - 0.525) / 0.043, 2))
+                    ].reduce((sum, row) => sum + row, 0);
+                    const abdominalMass = Math.exp(-Math.pow(x / 0.092, 2));
+                    z += frontWeight * abdomenBand * abdominalMass * 0.0045;
+                    z += frontWeight * abdomenBand * abWidth * abRows * 0.008;
+                    z -= frontWeight * abdomenBand * Math.exp(-Math.pow(x / 0.016, 2)) * 0.002;
+                    const rectusBorder = Math.exp(-Math.pow((Math.abs(x) - 0.100) / 0.015, 2))
+                        * Math.exp(-Math.pow((t - 0.42) / 0.16, 2));
+                    z -= frontWeight * abdomenBand * rectusBorder * 0.0016;
 
                     const obliqueBand = THREE.MathUtils.smoothstep(t, 0.16, 0.30)
                         * (1 - THREE.MathUtils.smoothstep(t, 0.47, 0.58));
-                    z += frontWeight * obliqueBand * Math.pow(Math.abs(nx), 3) * 0.007;
+                    z += frontWeight * obliqueBand * Math.pow(Math.abs(nx), 3) * 0.010;
+                    const serratusBand = Math.exp(-Math.pow((t - 0.61) / 0.12, 2))
+                        * Math.exp(-Math.pow((Math.abs(x) - 0.14) / 0.040, 2));
+                    z += frontWeight * serratusBand * 0.003;
                     const navel = Math.exp(-Math.pow(x / 0.012, 2) - Math.pow((t - 0.19) / 0.018, 2));
-                    z -= frontWeight * navel * 0.002;
+                    const navelRim = Math.exp(-Math.pow(x / 0.025, 2) - Math.pow((t - 0.19) / 0.032, 2));
+                    z -= frontWeight * navel * 0.003 + frontWeight * navelRim * 0.001;
                 }
 
                 pos.setXYZ(i, x, vy, z);
@@ -1557,6 +1566,29 @@
             }
             normals.needsUpdate = true;
             return geo;
+        }
+
+        function createSculptedPelvisGeometry() {
+            const geometry = new THREE.SphereGeometry(1, 64, 48);
+            const positions = geometry.attributes.position;
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const y = positions.getY(i);
+                const z = positions.getZ(i);
+                const backWeight = THREE.MathUtils.smoothstep(-z, 0.05, 0.75);
+                const hipWidth = 0.195 * (1 - 0.055 * y);
+                const pelvisDepth = 0.135 * (1 - 0.035 * y);
+                const glutealMass = backWeight * Math.max(0, 1 - y * y) * 0.012;
+
+                positions.setXYZ(
+                    i,
+                    x * hipWidth,
+                    y * 0.145,
+                    z * pelvisDepth - glutealMass
+                );
+            }
+            geometry.computeVertexNormals();
+            return geometry;
         }
 
         function createWarriorCharacter() {
@@ -1583,11 +1615,10 @@
             joints.root.add(joints.hips);
 
             // Chainmail & Leather Pelvis Base
-            const pelvisGeo = new THREE.CylinderGeometry(0.168, 0.154, 0.21, 24, 4);
-            pelvisGeo.scale(1.06, 1, 0.84);
+            const pelvisGeo = createSculptedPelvisGeometry();
             const pelvisMesh = new THREE.Mesh(pelvisGeo, materials.chainmail);
             pelvisMesh.name = 'Savasci_Pelvis_Base';
-            pelvisMesh.position.y = -0.02;
+            pelvisMesh.position.y = 0.015;
             pelvisMesh.castShadow = true;
             joints.hips.add(pelvisMesh);
 
@@ -1668,6 +1699,7 @@
             swordGroup.name = 'Savasci_Kilic';
             joints.weaponMount.add(swordGroup);
             buildSwordGeometry(state.swordType);
+            swordGroup.visible = !state.anatomyView;
             changeHelmetMode(state.helmetMode);
 
             warriorGroup.name = 'Savasci';
@@ -1698,11 +1730,11 @@
                 'Savasci_Deltoid_Base_L',
                 'Savasci_Deltoid_Base_R'
             ]);
-            const animePrint = createAnimeUnderwearTexture();
+            const fabricTexture = createUnderwearFabricTexture();
             const fabric = new THREE.MeshStandardMaterial({
-                map: animePrint,
-                bumpMap: animePrint,
-                bumpScale: 0.001,
+                map: fabricTexture,
+                bumpMap: fabricTexture,
+                bumpScale: 0.00035,
                 roughness: 0.86,
                 metalness: 0
             });
@@ -1711,29 +1743,11 @@
                 if (!node.isMesh) return;
                 const nodeMaterials = Array.isArray(node.material) ? node.material : [node.material];
                 if (/^Savasci_Thigh_Base_[RL]$/.test(node.name)) {
-                    const geometry = node.geometry.clone();
-                    const sourceIndices = geometry.index.array;
-                    const positions = geometry.attributes.position;
-                    const fabricIndices = [];
-                    const skinIndices = [];
-                    for (let i = 0; i < sourceIndices.length; i += 3) {
-                        const a = sourceIndices[i];
-                        const b = sourceIndices[i + 1];
-                        const c = sourceIndices[i + 2];
-                        const lowestY = Math.min(positions.getY(a), positions.getY(b), positions.getY(c));
-                        const target = lowestY >= 0.11 ? fabricIndices : skinIndices;
-                        target.push(a, b, c);
-                    }
-                    geometry.setIndex(fabricIndices.concat(skinIndices));
-                    geometry.clearGroups();
-                    geometry.addGroup(0, fabricIndices.length, 1);
-                    geometry.addGroup(fabricIndices.length, skinIndices.length, 0);
-                    node.geometry = geometry;
-                    node.material = [materials.humanSkin, fabric];
+                    node.material = materials.humanSkin;
                     return;
                 }
                 if (node.name === 'Savasci_Pelvis_Base') {
-                    node.material = fabric;
+                    node.material = materials.humanSkin;
                     return;
                 }
 
@@ -1743,6 +1757,7 @@
                 if (skinBase) {
                     node.material = materials.humanSkin;
                 } else if (nodeMaterials.some((material) => armorMaterials.has(material))) {
+                    node.userData.anatomyArmor = true;
                     node.visible = false;
                 }
             });
@@ -1753,80 +1768,47 @@
             const underwear = new THREE.Group();
             underwear.name = 'Savasci_BoxerShorts';
             underwear.userData = { clothingType: 'underwear', clothingSlot: 'underwear' };
-            const waistbandMaterial = new THREE.MeshStandardMaterial({ color: 0x17243c, roughness: 0.9 });
-            const waistband = new THREE.Mesh(new THREE.TorusGeometry(0.179, 0.006, 8, 32), waistbandMaterial);
+            const waistbandMaterial = new THREE.MeshStandardMaterial({ color: 0x806b59, roughness: 0.9 });
+            const waistband = new THREE.Mesh(new THREE.TorusGeometry(0.164, 0.004, 8, 48), waistbandMaterial);
             waistband.name = 'BoxerShorts_Waistband';
             waistband.rotation.x = Math.PI / 2;
             waistband.scale.set(1, 0.82, 1);
-            waistband.position.y = 0.069;
+            waistband.position.y = 0.101;
             underwear.add(waistband);
             hips.add(underwear);
         }
 
-        function createAnimeUnderwearTexture() {
+        function createUnderwearFabricTexture() {
             const size = 256;
             const canvas = document.createElement('canvas');
             canvas.width = size;
             canvas.height = size;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#263858';
+            ctx.fillStyle = '#806f60';
             ctx.fillRect(0, 0, size, size);
 
-            const drawSpark = (x, y, radius, color) => {
-                ctx.fillStyle = color;
+            let seed = 7919;
+            for (let i = 0; i < 18000; i++) {
+                seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+                const x = (seed / 4294967296) * size;
+                seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+                const y = (seed / 4294967296) * size;
+                const shade = 100 + ((seed >>> 24) % 24);
+                ctx.fillStyle = `rgba(${shade},${shade},${shade},0.22)`;
+                ctx.fillRect(x, y, 1.1, 1.1);
+            }
+
+            ctx.strokeStyle = 'rgba(180, 166, 148, 0.075)';
+            ctx.lineWidth = 1;
+            for (let i = -size; i < size * 2; i += 8) {
                 ctx.beginPath();
-                ctx.moveTo(x, y - radius);
-                ctx.lineTo(x + radius * 0.24, y - radius * 0.24);
-                ctx.lineTo(x + radius, y);
-                ctx.lineTo(x + radius * 0.24, y + radius * 0.24);
-                ctx.lineTo(x, y + radius);
-                ctx.lineTo(x - radius * 0.24, y + radius * 0.24);
-                ctx.lineTo(x - radius, y);
-                ctx.lineTo(x - radius * 0.24, y - radius * 0.24);
-                ctx.closePath();
-                ctx.fill();
-            };
-
-            for (let y = 0; y < size; y += 128) {
-                for (let x = 0; x < size; x += 128) {
-                    const cx = x + 64;
-                    const cy = y + 65;
-                    ctx.fillStyle = '#f3c7c8';
-                    ctx.beginPath();
-                    ctx.ellipse(cx, cy + 2, 27, 30, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.fillStyle = '#f5eee8';
-                    ctx.beginPath();
-                    ctx.moveTo(cx - 29, cy - 5);
-                    ctx.quadraticCurveTo(cx - 32, cy - 37, cx - 2, cy - 34);
-                    ctx.quadraticCurveTo(cx + 34, cy - 38, cx + 29, cy - 4);
-                    ctx.lineTo(cx + 12, cy - 14);
-                    ctx.lineTo(cx + 2, cy - 3);
-                    ctx.lineTo(cx - 8, cy - 15);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    ctx.fillStyle = '#32446c';
-                    ctx.beginPath();
-                    ctx.ellipse(cx - 10, cy + 3, 3.5, 5.5, 0, 0, Math.PI * 2);
-                    ctx.ellipse(cx + 10, cy + 3, 3.5, 5.5, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#b76c78';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(cx - 4, cy + 17);
-                    ctx.quadraticCurveTo(cx, cy + 20, cx + 4, cy + 17);
-                    ctx.stroke();
-
-                    drawSpark(x + 16, y + 22, 8, '#f4d68e');
-                    drawSpark(x + 108, y + 105, 7, '#8dd4d0');
-                    ctx.strokeStyle = 'rgba(248,225,207,0.56)';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(cx, cy + 1, 34, -0.3, Math.PI + 0.3);
-                    ctx.stroke();
-                }
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, size);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(size, i);
+                ctx.stroke();
             }
 
             const texture = new THREE.CanvasTexture(canvas);
@@ -2198,7 +2180,7 @@
 
         function createSculptedHumanHeadGeometry() {
             // High-resolution 64x64 sphere sculpted into a realistic masculine human head & face (Zero separate floating boxes!)
-            const headGeo = new THREE.SphereGeometry(0.110, 64, 64);
+            const headGeo = new THREE.SphereGeometry(0.110, 128, 96);
             const pos = headGeo.attributes.position;
             const uv = headGeo.attributes.uv;
 
@@ -2256,10 +2238,15 @@
                     if (ny > -0.28 && ny < 0.20 && Math.abs(nx) < 0.26) {
                         const noseWidth = Math.cos((Math.abs(nx) / 0.26) * Math.PI * 0.5);
                         // Nose projects furthest at the tip (ny = -0.18)
-                        const noseProfile = THREE.MathUtils.smoothstep(ny, 0.20, -0.16) * THREE.MathUtils.smoothstep(ny, -0.28, -0.18);
-                        const bridgeProfile = THREE.MathUtils.smoothstep(ny, 0.22, 0.05) * THREE.MathUtils.smoothstep(ny, -0.25, -0.05);
+                        const noseProfile = (1 - THREE.MathUtils.smoothstep(ny, -0.16, 0.20)) * THREE.MathUtils.smoothstep(ny, -0.28, -0.18);
+                        const bridgeProfile = (1 - THREE.MathUtils.smoothstep(ny, 0.05, 0.22)) * THREE.MathUtils.smoothstep(ny, -0.25, -0.05);
                         z += (noseProfile * 0.024 + bridgeProfile * 0.014) * Math.pow(noseWidth, 1.4) * frontWeight;
                     }
+
+                    const noseTip = Math.exp(-Math.pow(nx / 0.19, 2) - Math.pow((ny + 0.19) / 0.12, 2));
+                    const alarWings = Math.exp(-Math.pow((Math.abs(nx) - 0.17) / 0.085, 2) - Math.pow((ny + 0.23) / 0.09, 2));
+                    const nostrilIndent = Math.exp(-Math.pow((Math.abs(nx) - 0.125) / 0.055, 2) - Math.pow((ny + 0.27) / 0.032, 2));
+                    z += (noseTip * 0.009 + alarWings * 0.006 - nostrilIndent * 0.0035) * frontWeight;
 
                     // D. Zygomatic Cheekbones (|nx| around 0.45, ny around -0.08)
                     const cheekDist = Math.hypot((Math.abs(nx) - 0.42) / 0.28, (ny + 0.08) / 0.22);
@@ -2275,6 +2262,13 @@
                         const lipH = Math.sin(((ny + 0.52) / 0.22) * Math.PI);
                         z += lipW * lipH * 0.008 * frontWeight;
                     }
+                    if (ny > -0.57 && ny < -0.32 && Math.abs(nx) < 0.31) {
+                        const philtrum = Math.exp(-Math.pow(nx / 0.035, 2) - Math.pow((ny + 0.43) / 0.10, 2));
+                        const philtrumRidges = Math.exp(-Math.pow((Math.abs(nx) - 0.075) / 0.035, 2) - Math.pow((ny + 0.42) / 0.11, 2));
+                        z += (-philtrum * 0.0018 + philtrumRidges * 0.0015) * frontWeight;
+                    }
+                    const chinCrease = Math.exp(-Math.pow(nx / 0.25, 2) - Math.pow((ny + 0.56) / 0.035, 2));
+                    z -= chinCrease * 0.0014 * frontWeight;
                     if (ny <= -0.55 && ny > -0.88 && Math.abs(nx) < 0.30) {
                         const chinW = Math.cos((Math.abs(nx) / 0.30) * Math.PI * 0.5);
                         const chinH = Math.sin(((ny + 0.88) / 0.33) * Math.PI);
@@ -2304,28 +2298,42 @@
 
         function createReal3DHumanHeadAndNeck(parentChest) {
             joints.neck = new THREE.Group();
-            joints.neck.position.set(0, 0.63, 0.008);
+            joints.neck.position.set(0, 0.54, 0.008);
             parentChest.add(joints.neck);
 
             // Smooth Anatomical Muscular Human Neck (Single sculpted mesh without protruding white pipes!)
-            const neckGeo = new THREE.CylinderGeometry(0.064, 0.080, 0.125, 28, 6);
+            const neckGeo = new THREE.CylinderGeometry(0.068, 0.112, 0.235, 40, 12);
             const nPos = neckGeo.attributes.position;
             for (let i = 0; i < nPos.count; i++) {
                 let x = nPos.getX(i), y = nPos.getY(i), z = nPos.getZ(i);
-                // Slight natural trapezius flare at the bottom sides
-                if (y < 0) {
-                    x *= 1.0 + (-y / 0.062) * 0.12;
-                }
+                const flare = THREE.MathUtils.smoothstep(-y, 0.015, 0.11);
+                x *= 1 + flare * 0.08;
+                z *= 0.92 + flare * 0.08;
                 nPos.setXYZ(i, x, y, z);
             }
             neckGeo.computeVertexNormals();
             const neckMesh = new THREE.Mesh(neckGeo, materials.humanSkin);
-            neckMesh.position.y = 0.052;
+            neckMesh.position.y = 0.108;
             neckMesh.castShadow = true;
             joints.neck.add(neckMesh);
 
+            const larynx = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), materials.humanSkin);
+            larynx.name = 'Savasci_Larynx';
+            larynx.scale.set(0.014, 0.019, 0.010);
+            larynx.position.set(0, 0.041, 0.060);
+            joints.neck.add(larynx);
+
+            [-1, 1].forEach((side) => {
+                const neckTendon = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), materials.humanSkin);
+                neckTendon.scale.set(0.014, 0.068, 0.030);
+                neckTendon.position.set(side * 0.038, 0.046, 0.047);
+                neckTendon.rotation.z = side * 0.16;
+                neckTendon.castShadow = true;
+                joints.neck.add(neckTendon);
+            });
+
             joints.head = new THREE.Group();
-            joints.head.position.set(0, 0.104, 0);
+            joints.head.position.set(0, 0.205, 0);
             joints.neck.add(joints.head);
 
             // 1. Unified 3D Sculpted Human Head with 1024x1024 Realistic Face Texture
@@ -2338,7 +2346,83 @@
             joints.faceFeaturesGroup = new THREE.Group();
             joints.head.add(joints.faceFeaturesGroup);
 
-            // Smoothly contoured 3D Human Ears on sides of head
+            const scleraMaterial = new THREE.MeshPhysicalMaterial({
+                color: 0xe9e3d8,
+                roughness: 0.28,
+                clearcoat: 0.18,
+                clearcoatRoughness: 0.18
+            });
+            const irisMaterial = new THREE.MeshStandardMaterial({
+                color: 0x75401d,
+                roughness: 0.3,
+                metalness: 0
+            });
+            const limbalMaterial = new THREE.MeshStandardMaterial({ color: 0x25140e, roughness: 0.32 });
+            const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0x090706 });
+            const catchlightMaterial = new THREE.MeshBasicMaterial({ color: 0xfff8ed });
+            const browMaterial = new THREE.MeshStandardMaterial({ color: 0x39231b, roughness: 0.88 });
+
+            [-1, 1].forEach((side) => {
+                const eye = new THREE.Group();
+                eye.name = side < 0 ? 'Savasci_Goz_R' : 'Savasci_Goz_L';
+                joints[side < 0 ? 'eyeR' : 'eyeL'] = eye;
+                eye.position.set(side * 0.034, 0.122, 0.101);
+                joints.faceFeaturesGroup.add(eye);
+
+                const sclera = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 20), scleraMaterial);
+                sclera.scale.set(0.0145, 0.0076, 0.0062);
+                eye.add(sclera);
+
+                const limbalRing = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), limbalMaterial);
+                limbalRing.position.set(0, 0, 0.0054);
+                limbalRing.scale.set(0.0053, 0.0053, 0.0018);
+                eye.add(limbalRing);
+
+                const iris = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), irisMaterial);
+                iris.position.set(0, 0, 0.0063);
+                iris.scale.set(0.0044, 0.0044, 0.0017);
+                eye.add(iris);
+
+                const pupil = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), pupilMaterial);
+                pupil.position.set(0, 0, 0.0077);
+                pupil.scale.set(0.0019, 0.0022, 0.0009);
+                eye.add(pupil);
+
+                const catchlight = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 8), catchlightMaterial);
+                catchlight.position.set(-0.0015, 0.0018, 0.0086);
+                catchlight.scale.set(0.0011, 0.0011, 0.0005);
+                eye.add(catchlight);
+
+                const upperLidCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(-0.015, -0.0005, 0.001),
+                    new THREE.Vector3(-0.008, 0.0045, 0.0025),
+                    new THREE.Vector3(0, 0.0061, 0.0032),
+                    new THREE.Vector3(0.008, 0.0045, 0.0025),
+                    new THREE.Vector3(0.015, -0.0005, 0.001)
+                ]);
+                const lowerLidCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(-0.015, -0.0005, 0.001),
+                    new THREE.Vector3(-0.008, -0.004, 0.002),
+                    new THREE.Vector3(0, -0.0051, 0.0027),
+                    new THREE.Vector3(0.008, -0.004, 0.002),
+                    new THREE.Vector3(0.015, -0.0005, 0.001)
+                ]);
+                const lidMaterial = materials.humanSkin;
+                eye.add(new THREE.Mesh(new THREE.TubeGeometry(upperLidCurve, 16, 0.00135, 6, false), lidMaterial));
+                eye.add(new THREE.Mesh(new THREE.TubeGeometry(lowerLidCurve, 16, 0.0011, 6, false), lidMaterial));
+
+                const browCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(-0.017, 0.014, 0.001),
+                    new THREE.Vector3(-0.008, 0.018, 0.003),
+                    new THREE.Vector3(0.001, 0.017, 0.004),
+                    new THREE.Vector3(0.017, 0.012, 0.001)
+                ]);
+                const brow = new THREE.Mesh(new THREE.TubeGeometry(browCurve, 18, 0.0025, 6, false), browMaterial);
+                brow.position.set(side * 0.034, 0.122, 0.101);
+                joints.faceFeaturesGroup.add(brow);
+            });
+
+            // Sculpted ears with a raised helix and recessed concha.
             [-1, 1].forEach(side => {
                 const earGeo = new THREE.SphereGeometry(0.022, 12, 10);
                 earGeo.scale(0.38, 1.05, 0.65);
@@ -2347,6 +2431,25 @@
                 ear.rotation.y = -side * 0.22;
                 ear.rotation.z = -side * 0.08;
                 joints.faceFeaturesGroup.add(ear);
+
+                const earRimCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(side * 0.090, 0.091, 0.010),
+                    new THREE.Vector3(side * 0.101, 0.093, 0.010),
+                    new THREE.Vector3(side * 0.106, 0.107, 0.011),
+                    new THREE.Vector3(side * 0.103, 0.122, 0.010),
+                    new THREE.Vector3(side * 0.094, 0.125, 0.009),
+                    new THREE.Vector3(side * 0.091, 0.114, 0.012)
+                ]);
+                const earRim = new THREE.Mesh(
+                    new THREE.TubeGeometry(earRimCurve, 24, 0.0022, 6, false),
+                    materials.humanSkin
+                );
+                joints.faceFeaturesGroup.add(earRim);
+
+                const tragus = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 10), materials.humanSkin);
+                tragus.scale.set(0.003, 0.005, 0.003);
+                tragus.position.set(side * 0.091, 0.104, 0.012);
+                joints.faceFeaturesGroup.add(tragus);
             });
 
             // 2. Natural Layered 3D Warrior Hairstyle (Swept-back volume + sideburns + nape hair, NOT spiky sea-urchin cones!)
@@ -2354,46 +2457,39 @@
             joints.head.add(joints.hairGroup);
 
             // Base thick hair cap covering scalp, back of head, and sideburns
-            const scalpGeo = new THREE.SphereGeometry(0.104, 32, 24);
+            const scalpGeo = new THREE.SphereGeometry(0.112, 48, 32, 0, Math.PI * 2, 0, 1.22);
             const sPos = scalpGeo.attributes.position;
             for (let i = 0; i < sPos.count; i++) {
                 let x = sPos.getX(i), y = sPos.getY(i), z = sPos.getZ(i);
                 y *= 1.24;
-                x *= 0.94;
+                x *= 0.96;
                 z *= 1.08;
-
-                // Carve out the front face opening cleanly so forehead, eyes, and cheeks are 100% unobstructed
-                if (z > 0.015 && y < 0.068) {
-                    z = 0.015;
-                }
-                // Taper nape of neck at back
-                if (y < -0.04 && z < 0) {
-                    x *= 0.85;
-                }
-                sPos.setXYZ(i, x, y + 0.118, z - 0.014);
+                sPos.setXYZ(i, x, y + 0.118, z - 0.010);
             }
             scalpGeo.computeVertexNormals();
             const scalpCap = new THREE.Mesh(scalpGeo, materials.hair);
             scalpCap.castShadow = true;
             joints.hairGroup.add(scalpCap);
 
-            // Layered swept-back warrior hair locks lying naturally along the crown & temples
-            for (let i = 0; i < 24; i++) {
-                const t = i / 23;
+            // Fine swept-back strands soften the scalp silhouette without cone-shaped spikes.
+            for (let i = 0; i < 48; i++) {
+                const t = i / 47;
                 const angle = (t - 0.5) * Math.PI * 1.25; // Fan across top & sides, never blocking the face
                 const row = i % 3;
-                const strandGeo = new THREE.ConeGeometry(0.026, 0.095, 8);
-                strandGeo.scale(1.2, 1.0, 0.55);
-                const strand = new THREE.Mesh(strandGeo, materials.hair);
-
                 const rx = Math.sin(angle) * (0.062 + row * 0.012);
                 const rz = -Math.cos(angle) * 0.045 + 0.015 - row * 0.025;
                 const ry = 0.212 - row * 0.018 - Math.abs(Math.sin(angle)) * 0.022;
-
-                strand.position.set(rx, ry, rz);
-                // Swept backward along the skull contour
-                strand.rotation.x = -0.85 - row * 0.18;
-                strand.rotation.z = -Math.sin(angle) * 0.45;
+                const strandCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(rx * 0.72, ry - 0.028, 0.066 - row * 0.005),
+                    new THREE.Vector3(rx * 0.88, ry + 0.002, rz + 0.025),
+                    new THREE.Vector3(rx, ry + 0.004, rz),
+                    new THREE.Vector3(rx * 0.94, ry - 0.025, rz - 0.035)
+                ]);
+                const strand = new THREE.Mesh(
+                    new THREE.TubeGeometry(strandCurve, 12, 0.0045 - row * 0.00035, 6, false),
+                    materials.hair
+                );
+                strand.castShadow = true;
                 joints.hairGroup.add(strand);
             }
 
@@ -2482,15 +2578,47 @@
             return geo;
         }
 
-        function createLimbSegmentGeometry(topR, botR, length, bulge = 0.16, radialSegments = 24, heightSegments = 14) {
+        function createLimbSegmentGeometry(topR, botR, length, bulge = 0.16, radialSegments = 24, heightSegments = 14, anatomy = 'neutral') {
             const geo = new THREE.CylinderGeometry(topR, botR, length, radialSegments, heightSegments);
             const pos = geo.attributes.position;
             for (let i = 0; i < pos.count; i++) {
                 let x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
                 const normY = (y + length * 0.5) / length;
                 const muscleCurve = Math.sin(normY * Math.PI) * bulge;
-                const scale = 1.0 + muscleCurve;
-                pos.setXYZ(i, x * scale * 0.96, y, z * scale * 1.04);
+                const radial = Math.hypot(x, z);
+                const normalizedZ = radial > 0 ? z / radial : 0;
+                const front = THREE.MathUtils.smoothstep(normalizedZ, 0.15, 0.92);
+                const back = THREE.MathUtils.smoothstep(-normalizedZ, 0.15, 0.92);
+                const belly = Math.exp(-Math.pow((normY - 0.47) / 0.24, 2));
+                let frontMass = 0;
+                let backMass = 0;
+
+                if (anatomy === 'upper-arm') {
+                    const bicepsPeak = Math.exp(-Math.pow((normY - 0.58) / 0.24, 2));
+                    const tricepsPeak = Math.exp(-Math.pow((normY - 0.46) / 0.26, 2));
+                    frontMass = bicepsPeak * 0.16;
+                    backMass = tricepsPeak * 0.105;
+                } else if (anatomy === 'forearm') {
+                    const flexorMass = Math.exp(-Math.pow((normY - 0.58) / 0.28, 2));
+                    const extensorMass = Math.exp(-Math.pow((normY - 0.43) / 0.30, 2));
+                    frontMass = flexorMass * 0.065;
+                    backMass = extensorMass * 0.05;
+                } else if (anatomy === 'thigh') {
+                    const quadricepsPeak = Math.exp(-Math.pow((normY - 0.43) / 0.24, 2));
+                    const outerQuad = Math.exp(-Math.pow((Math.abs(x) / Math.max(radial, 0.0001) - 0.54) / 0.30, 2));
+                    const innerQuad = Math.exp(-Math.pow((Math.abs(x) / Math.max(radial, 0.0001) - 0.40) / 0.24, 2));
+                    frontMass = quadricepsPeak * (0.07 + outerQuad * 0.075 + innerQuad * 0.035);
+                    backMass = Math.exp(-Math.pow((normY - 0.47) / 0.28, 2)) * 0.075;
+                } else if (anatomy === 'calf') {
+                    const calfPeak = Math.exp(-Math.pow((normY - 0.62) / 0.22, 2));
+                    const tibialisPeak = Math.exp(-Math.pow((normY - 0.50) / 0.28, 2));
+                    backMass = calfPeak * 0.20;
+                    frontMass = tibialisPeak * 0.045;
+                }
+
+                const scaleX = (1.0 + muscleCurve) * (1 + front * frontMass + back * backMass) * 0.96;
+                const scaleZ = (1.0 + muscleCurve) * (1 + front * frontMass + back * backMass) * 1.04;
+                pos.setXYZ(i, x * scaleX, y, z * scaleZ);
             }
             geo.computeVertexNormals();
             const normals = geo.attributes.normal;
@@ -2515,11 +2643,27 @@
             wristGroup.add(handRoot);
             joints['hand' + label] = handRoot;
 
+            const wristSkin = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), materials.humanSkin);
+            wristSkin.scale.set(0.042, 0.045, 0.044);
+            wristSkin.position.set(0, -0.012, 0);
+            handRoot.add(wristSkin);
+
             // 1. Sculpted Human Palm (Metacarpals)
-            const palmSkin = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.082, 0.082), materials.humanSkin);
+            const palmSkin = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), materials.humanSkin);
+            palmSkin.scale.set(0.022, 0.056, 0.047);
             palmSkin.position.set(0, -0.044, 0.004);
             palmSkin.castShadow = true;
             handRoot.add(palmSkin);
+
+            const thenarPad = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), materials.humanSkin);
+            thenarPad.scale.set(0.018, 0.030, 0.022);
+            thenarPad.position.set(-side * 0.004, -0.057, 0.031);
+            handRoot.add(thenarPad);
+
+            const hypothenarPad = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), materials.humanSkin);
+            hypothenarPad.scale.set(0.015, 0.026, 0.020);
+            hypothenarPad.position.set(-side * 0.002, -0.058, -0.030);
+            handRoot.add(hypothenarPad);
 
             // 2. Ornate Steel & Gold Gauntlet Back-of-Hand Plate (Outer dorsal side: side * 0.016)
             const dorsalPlate = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.076, 0.086), materials.armorSteel);
@@ -2539,6 +2683,10 @@
                 { name: 'pinky',  zOff: -0.032, lenScale: 0.82, rScale: 0.86 }
             ];
 
+            const fingernailMaterial = new THREE.MeshStandardMaterial({
+                color: 0xc49b86,
+                roughness: 0.72
+            });
             fingerJoints[label] = [];
 
             fingerSpecs.forEach((spec) => {
@@ -2547,7 +2695,7 @@
                 mcp.position.set(0, -0.084, spec.zOff);
                 handRoot.add(mcp);
 
-                const knuckleKnob = new THREE.Mesh(new THREE.SphereGeometry(0.0095 * spec.rScale, 8, 8), materials.goldTrim);
+                const knuckleKnob = new THREE.Mesh(new THREE.SphereGeometry(0.0095 * spec.rScale, 14, 10), materials.humanSkin);
                 knuckleKnob.position.x = side * 0.006;
                 mcp.add(knuckleKnob);
 
@@ -2601,6 +2749,11 @@
                 fingerTipCap.position.y = -p3Len;
                 dip.add(fingerTipCap);
 
+                const fingernail = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), fingernailMaterial);
+                fingernail.position.set(side * 0.0048, -p3Len * 0.72, 0);
+                fingernail.scale.set(0.0011, 0.0050 * spec.lenScale, 0.0038 * spec.rScale);
+                dip.add(fingernail);
+
                 fingerJoints[label].push({ mcp, pip, dip, isThumb: false });
             });
 
@@ -2628,6 +2781,11 @@
             const thumbTip = new THREE.Mesh(new THREE.SphereGeometry(0.007, 8, 8), materials.humanSkin);
             thumbTip.position.y = -t2Len;
             thumbIp.add(thumbTip);
+
+            const thumbNail = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), fingernailMaterial);
+            thumbNail.position.set(side * 0.005, -t2Len * 0.68, 0);
+            thumbNail.scale.set(0.0012, 0.006, 0.0045);
+            thumbIp.add(thumbNail);
 
             fingerJoints[label].push({ mcp: thumbMcp, pip: thumbIp, dip: null, isThumb: true, side });
         }
@@ -2706,7 +2864,7 @@
             pauldronGroup.add(shoulderSpike);
 
             // Exposed Muscular Human Biceps & Triceps (Clean radius so zero black sawtooth clipping!)
-            const upperArmGeo = createLimbSegmentGeometry(0.064, 0.054, 0.31, 0.20, 32, 16);
+            const upperArmGeo = createLimbSegmentGeometry(0.064, 0.054, 0.31, 0.16, 48, 32, 'upper-arm');
             const upperArmSkin = new THREE.Mesh(upperArmGeo, materials.humanSkin);
             upperArmSkin.position.y = -0.15;
             upperArmSkin.castShadow = true;
@@ -2723,11 +2881,11 @@
             shoulder.add(elbow);
             joints['elbow' + label] = elbow;
 
-            const elbowJointSkin = new THREE.Mesh(new THREE.SphereGeometry(0.045, 24, 18), materials.humanSkin);
+            const elbowJointSkin = new THREE.Mesh(new THREE.SphereGeometry(0.065, 32, 24), materials.humanSkin);
             elbow.add(elbowJointSkin);
 
             // Muscular Forearm + Leather/Steel Vambrace Bracer (Radius 0.068 > Forearm 0.056 so zero z-fighting!)
-            const forearmSkinGeo = createLimbSegmentGeometry(0.055, 0.042, 0.25, 0.12);
+            const forearmSkinGeo = createLimbSegmentGeometry(0.055, 0.042, 0.25, 0.10, 40, 28, 'forearm');
             const forearmSkin = new THREE.Mesh(forearmSkinGeo, materials.humanSkin);
             forearmSkin.position.y = -0.125;
             forearmSkin.castShadow = true;
@@ -2768,7 +2926,7 @@
             joints.hips.add(thigh);
             joints['thigh' + label] = thigh;
 
-            const thighGeo = createLimbSegmentGeometry(0.098, 0.076, 0.44, 0.18, 32, 16);
+            const thighGeo = createLimbSegmentGeometry(0.098, 0.076, 0.44, 0.11, 48, 32, 'thigh');
             const thighMesh = new THREE.Mesh(thighGeo, materials.chainmail);
             thighMesh.name = 'Savasci_Thigh_Base_' + label;
             thighMesh.position.y = -0.22;
@@ -2795,15 +2953,41 @@
 
             const kneeSkin = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 20), materials.humanSkin);
             kneeSkin.name = 'Savasci_Knee_Base_' + label;
-            kneeSkin.scale.set(0.060, 0.062, 0.060);
+            kneeSkin.scale.set(0.075, 0.073, 0.073);
             knee.add(kneeSkin);
 
-            const kneeCap = new THREE.Mesh(new THREE.OctahedronGeometry(0.066, 1), materials.goldTrim);
-            kneeCap.scale.set(1.05, 1.35, 0.75);
-            kneeCap.position.set(0, 0.01, 0.058);
+            const quadricepsTendon = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), materials.humanSkin);
+            quadricepsTendon.name = 'Savasci_QuadricepsTendon_' + label;
+            quadricepsTendon.scale.set(0.027, 0.031, 0.018);
+            quadricepsTendon.position.set(0, 0.050, 0.044);
+            knee.add(quadricepsTendon);
+
+            const patella = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 20), materials.humanSkin);
+            patella.name = 'Savasci_Patella_Base_' + label;
+            patella.scale.set(0.041, 0.046, 0.024);
+            patella.position.set(0, 0.004, 0.051);
+            knee.add(patella);
+
+            const patellarLigament = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 14), materials.humanSkin);
+            patellarLigament.name = 'Savasci_PatellarLigament_' + label;
+            patellarLigament.scale.set(0.012, 0.030, 0.013);
+            patellarLigament.position.set(0, -0.047, 0.039);
+            knee.add(patellarLigament);
+
+            const kneeCap = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 24), materials.armorSteel);
+            kneeCap.name = 'Savasci_Patella_Armor_' + label;
+            kneeCap.scale.set(0.063, 0.070, 0.032);
+            kneeCap.position.set(0, 0.01, 0.060);
+            kneeCap.castShadow = true;
             knee.add(kneeCap);
 
-            const shinGeo = createLimbSegmentGeometry(0.078, 0.058, 0.44, 0.15);
+            const kneecapTrim = new THREE.Mesh(new THREE.TorusGeometry(0.060, 0.0035, 8, 32), materials.goldTrim);
+            kneecapTrim.name = 'Savasci_Patella_Trim_' + label;
+            kneecapTrim.scale.set(1, 1.08, 1);
+            kneecapTrim.position.set(0, 0.01, 0.078);
+            knee.add(kneecapTrim);
+
+            const shinGeo = createLimbSegmentGeometry(0.078, 0.058, 0.44, 0.08, 44, 32, 'calf');
             const shinMesh = new THREE.Mesh(shinGeo, materials.armorSteel);
             shinMesh.name = 'Savasci_Shin_Base_' + label;
             shinMesh.position.y = -0.22;
@@ -2819,24 +3003,107 @@
             knee.add(ankle);
             joints['ankle' + label] = ankle;
 
-            const heelMesh = new THREE.Mesh(new THREE.BoxGeometry(0.092, 0.082, 0.125), materials.armorSteel);
+            const footVolumeGeometry = new THREE.SphereGeometry(1, 48, 32);
+            const footVolumePositions = footVolumeGeometry.attributes.position;
+            for (let i = 0; i < footVolumePositions.count; i++) {
+                const z = footVolumePositions.getZ(i);
+                const midfoot = Math.exp(-Math.pow((z - 0.05) / 0.62, 2));
+                footVolumePositions.setX(i, footVolumePositions.getX(i) * (0.78 + midfoot * 0.22));
+            }
+            footVolumeGeometry.computeVertexNormals();
+            const footVolume = new THREE.Mesh(footVolumeGeometry, materials.humanSkin);
+            footVolume.name = 'Savasci_FootVolume_Base_' + label;
+            footVolume.scale.set(0.066, 0.032, 0.135);
+            footVolume.position.set(0, -0.033, 0.075);
+            footVolume.castShadow = true;
+            ankle.add(footVolume);
+
+            const heelMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 20), materials.humanSkin);
             heelMesh.name = 'Savasci_Foot_Base_' + label;
-            heelMesh.position.set(0, -0.04, -0.01);
+            heelMesh.scale.set(0.051, 0.044, 0.072);
+            heelMesh.position.set(0, -0.035, -0.018);
             heelMesh.castShadow = true;
             ankle.add(heelMesh);
+
+            const achilles = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), materials.humanSkin);
+            achilles.name = 'Savasci_Achilles_' + label;
+            achilles.scale.set(0.014, 0.054, 0.020);
+            achilles.position.set(0, 0.003, -0.060);
+            ankle.add(achilles);
+
+            [-1, 1].forEach((ankleSide) => {
+                const ankleBone = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), materials.humanSkin);
+                ankleBone.name = 'Savasci_Malleolus_' + label + '_' + ankleSide;
+                ankleBone.scale.set(0.014, 0.018, 0.017);
+                ankleBone.position.set(ankleSide * 0.043, -0.006, 0.006);
+                ankle.add(ankleBone);
+            });
 
             const toe = new THREE.Group();
             toe.position.set(0, -0.058, 0.048);
             ankle.add(toe);
             joints['toe' + label] = toe;
 
-            const bootFront = new THREE.Mesh(new THREE.ConeGeometry(0.058, 0.16, 8), materials.armorSteel);
+            const bootFrontGeo = new THREE.SphereGeometry(1, 32, 20);
+            const bootVertices = bootFrontGeo.attributes.position;
+            for (let i = 0; i < bootVertices.count; i++) {
+                const z = bootVertices.getZ(i);
+                bootVertices.setX(i, bootVertices.getX(i) * (1 - Math.max(0, z) * 0.12));
+            }
+            bootFrontGeo.computeVertexNormals();
+            const bootFront = new THREE.Mesh(bootFrontGeo, materials.armorSteel);
             bootFront.name = 'Savasci_Toe_Base_' + label;
-            bootFront.rotation.x = Math.PI / 2;
-            bootFront.scale.set(1.08, 1, 0.68);
-            bootFront.position.set(0, 0.015, 0.065);
+            bootFront.scale.set(0.064, 0.044, 0.115);
+            bootFront.position.set(0, 0.006, 0.064);
             bootFront.castShadow = true;
             toe.add(bootFront);
+
+            const toeSpecs = [
+                { lateral: -0.039, length: 0.060, width: 0.015 },
+                { lateral: -0.015, length: 0.053, width: 0.0125 },
+                { lateral: 0.010, length: 0.046, width: 0.011 },
+                { lateral: 0.032, length: 0.038, width: 0.0095 },
+                { lateral: 0.050, length: 0.031, width: 0.008 }
+            ];
+            const toenailMaterial = new THREE.MeshStandardMaterial({ color: 0xd5b4a3, roughness: 0.62 });
+            toeSpecs.forEach((spec, index) => {
+                const digit = new THREE.Group();
+                digit.name = 'Savasci_FootDigit_' + label + '_' + (index + 1);
+                digit.position.set(-side * spec.lateral, 0.009, 0.096);
+                toe.add(digit);
+
+                const proximal = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), materials.humanSkin);
+                proximal.scale.set(spec.width, 0.011, spec.length * 0.66);
+                proximal.position.z = spec.length * 0.29;
+                digit.add(proximal);
+
+                const interphalangealJoint = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10), materials.humanSkin);
+                interphalangealJoint.scale.set(spec.width * 0.82, 0.009, spec.length * 0.25);
+                interphalangealJoint.position.z = spec.length * 0.72;
+                digit.add(interphalangealJoint);
+
+                const nail = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), toenailMaterial);
+                nail.scale.set(spec.width * 0.48, 0.0018, spec.length * 0.16);
+                nail.position.set(0, 0.020, spec.length * 0.88);
+                digit.add(nail);
+            });
+
+            const bootSole = new THREE.Mesh(
+                new THREE.SphereGeometry(1, 24, 16),
+                materials.leather
+            );
+            bootSole.name = 'Savasci_BootSole_' + label;
+            bootSole.scale.set(0.060, 0.012, 0.098);
+            bootSole.position.set(0, -0.031, 0.043);
+            toe.add(bootSole);
+
+            for (let i = 0; i < 5; i++) {
+                const toeCap = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), materials.armorAccentPlate);
+                const lateral = (i - 2) * 0.019;
+                toeCap.scale.set(0.011, 0.020 - Math.abs(i - 2) * 0.002, 0.009);
+                toeCap.position.set(lateral, 0.008, 0.064 + 0.115 * Math.sqrt(Math.max(0.1, 1 - Math.pow(lateral / 0.064, 2))) - 0.006);
+                toe.add(toeCap);
+            }
         }
 
         function createArticulatedCape(parentChest) {
@@ -3602,7 +3869,7 @@
 
         function createMetinStoneTarget() {
             metinStoneGroup = new THREE.Group();
-            metinStoneGroup.position.set(0.25, 0, 2.35);
+            metinStoneGroup.position.set(2.5, 0, 2.35);
             metinStoneGroup.visible = state.metinActive;
             scene.add(metinStoneGroup);
 
@@ -4951,6 +5218,7 @@
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
+                setCameraView(activeCameraView);
             });
         }
 
@@ -4985,6 +5253,40 @@
             camera.lookAt(targetCenter);
         }
 
+        function toggleAnatomyView() {
+            state.anatomyView = !state.anatomyView;
+            joints.root.traverse((node) => {
+                if (node.isMesh && node.userData.anatomyArmor) {
+                    node.visible = !state.anatomyView;
+                }
+            });
+
+            const button = document.getElementById('anatomy-toggle-btn');
+            button.textContent = state.anatomyView ? 'Zırhı Göster' : 'İnsana Dön';
+            button.setAttribute('aria-pressed', String(state.anatomyView));
+            if (swordGroup) swordGroup.visible = !state.anatomyView;
+        }
+
+        function setCameraView(view) {
+            const mobile = window.innerWidth <= 640;
+            const views = {
+                default: { radius: 4.3, lookAt: new THREE.Vector3(0, 1.38, 0), phi: 1.22, fov: 40 },
+                fullbody: { radius: mobile ? 4.9 : 3.8, lookAt: new THREE.Vector3(0, mobile ? 1.14 : 1.02, 0), phi: 1.28, fov: 38 },
+                closeup: { radius: 1.25, lookAt: new THREE.Vector3(0, 1.77, 0.02), phi: 1.52, fov: 34 },
+                hand: { radius: 1.85, lookAt: new THREE.Vector3(-0.38, 0.93, 0.32), phi: 1.36, fov: 38 }
+            };
+            const selectedView = views[view];
+            if (!selectedView) {
+                throw new Error('Unknown camera view: ' + view);
+            }
+
+            activeCameraView = view;
+            camState.targetRadius = selectedView.radius;
+            camState.targetLookAt.copy(selectedView.lookAt);
+            camState.phi = selectedView.phi;
+            camState.targetFov = selectedView.fov;
+        }
+
         function animate() {
             requestAnimationFrame(animate);
             if (isSamplingAnimations) return;
@@ -4999,6 +5301,7 @@
 
         window.onload = function () {
             initScene();
+            setCameraView('fullbody');
             animate();
         };
     </script>
