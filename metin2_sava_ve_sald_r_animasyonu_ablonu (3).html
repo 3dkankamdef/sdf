@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Metin2 Bedensel Savaşçı - Prosedürel İnsan Detayları</title>
+    <title>Metin2 - Yang-Shin Merkez Köy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -44,27 +44,24 @@
             font-family: 'Cinzel', serif;
         }
         .rpg-panel {
-            background: linear-gradient(180deg, rgba(14, 19, 29, 0.92) 0%, rgba(7, 10, 16, 0.96) 100%);
-            border: 1px solid rgba(212, 175, 55, 0.48);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85), inset 0 0 18px rgba(212, 175, 55, 0.08);
-            backdrop-filter: blur(12px);
+            background: rgba(20, 18, 16, 0.94);
+            border: 1px solid rgba(151, 122, 72, 0.72);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), inset 0 1px rgba(255, 232, 181, 0.06);
         }
         .skill-btn {
             position: relative;
-            transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.15s, box-shadow 0.15s;
-            border: 1.5px solid rgba(212, 175, 55, 0.68);
-            background: radial-gradient(circle at 50% 30%, rgba(45, 58, 82, 0.95) 0%, rgba(10, 14, 22, 0.98) 100%);
+            transition: transform 0.12s ease, border-color 0.15s;
+            border: 1px solid rgba(161, 132, 79, 0.9);
+            background: rgba(27, 23, 19, 0.94);
             overflow: hidden;
             touch-action: manipulation;
         }
         .skill-btn:hover {
-            border-color: #fbbf24;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.55);
+            border-color: #d4b16a;
         }
         .skill-btn:active, .skill-btn.active-trigger {
             transform: scale(0.90);
-            border-color: #ffffff;
-            box-shadow: 0 0 28px rgba(251, 191, 36, 0.95);
+            border-color: #f1d28d;
         }
         .damage-popup {
             position: absolute;
@@ -87,9 +84,9 @@
             width: 112px;
             height: 112px;
             border-radius: 9999px;
-            background: radial-gradient(circle, rgba(212, 175, 55, 0.16) 0%, rgba(10, 14, 22, 0.88) 75%);
-            border: 2px solid rgba(212, 175, 55, 0.55);
-            box-shadow: 0 8px 28px rgba(0,0,0,0.75), inset 0 0 14px rgba(212, 175, 55, 0.18);
+            background: rgba(24, 21, 18, 0.68);
+            border: 1px solid rgba(161, 132, 79, 0.72);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
             z-index: 30;
             touch-action: none;
             display: flex;
@@ -100,23 +97,29 @@
             width: 44px;
             height: 44px;
             border-radius: 9999px;
-            background: radial-gradient(circle at 35% 35%, #fde047 0%, #d97706 65%, #78350f 100%);
-            border: 2px solid rgba(255, 255, 255, 0.85);
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.85), 0 0 14px rgba(245, 158, 11, 0.65);
+            background: #a8792f;
+            border: 1px solid #e1c27f;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.75);
             pointer-events: none;
             transform: translate(0px, 0px);
         }
         .attack-main-btn {
-            background: radial-gradient(circle at 35% 30%, #f59e0b 0%, #b91c1c 62%, #450a0a 100%);
-            border: 2.5px solid #fde047;
-            box-shadow: 0 0 30px rgba(245, 158, 11, 0.6), inset 0 0 16px rgba(255, 255, 255, 0.35);
-            transition: transform 0.08s ease, box-shadow 0.12s ease;
+            background: #782923;
+            border: 1px solid #c8a55d;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), inset 0 1px rgba(255, 255, 255, 0.12);
+            transition: transform 0.08s ease, border-color 0.12s ease;
             touch-action: none;
         }
         .attack-main-btn:active, .attack-main-btn.active-trigger {
             transform: scale(0.90);
-            border-color: #ffffff;
-            box-shadow: 0 0 44px rgba(251, 191, 36, 0.98), inset 0 0 22px rgba(255, 255, 255, 0.75);
+            border-color: #f1d28d;
+        }
+        .hud-bar {
+            height: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.85);
+            background: #100e0c;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.85);
         }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
@@ -128,201 +131,143 @@
     <div id="canvas-container"></div>
     <div id="damage-layer" class="fixed inset-0 pointer-events-none z-30 overflow-hidden"></div>
 
-    <header class="fixed top-2 left-2 right-2 z-20 flex flex-wrap items-center justify-between gap-1.5 pointer-events-none">
-        <div class="rpg-panel rounded-xl px-2.5 py-1.5 flex items-center gap-2.5 pointer-events-auto">
-            <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-lg bg-gradient-to-br from-amber-500/30 via-red-950/60 to-slate-950 border border-amber-400/70 flex items-center justify-center shadow-inner">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 drop-shadow" viewBox="0 0 24 24" fill="currentColor">
+    <header class="fixed top-2 left-2 right-2 z-20 flex items-start justify-between gap-2 pointer-events-none">
+        <div class="rpg-panel rounded px-2.5 py-2 flex items-center gap-2.5 pointer-events-auto">
+            <div class="relative w-9 h-9 rounded bg-stone-900 border border-amber-700/80 flex items-center justify-center">
+                <svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18l6 2.25v4.66c0 4.13-2.88 8.03-6 9.08-3.12-1.05-6-4.95-6-9.08V6.43l6-2.25z"/>
                 </svg>
-                <span id="char-level-badge" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-950 text-[8px] font-black px-1 rounded border border-amber-200">Lv.1</span>
+                <span id="char-level-badge" class="absolute -bottom-1 -right-1 bg-amber-700 text-amber-50 text-[8px] font-bold px-1 rounded-sm border border-amber-300">Lv.1</span>
             </div>
-            <div>
-                <div class="flex items-center gap-1.5">
-                    <h1 class="font-rpg text-[11px] sm:text-sm font-bold text-amber-300 tracking-wider">BEDENSEL SAVAŞÇI</h1>
-                    <span class="rounded border border-cyan-300/60 bg-cyan-400/10 px-1 py-0.5 text-[7px] font-black tracking-wider text-cyan-200">PROCEDURAL HUMAN · V4</span>
-                    <span id="aura-badge" class="hidden text-[8px] px-1.5 py-0.5 rounded-full bg-orange-500/30 border border-amber-400/80 text-amber-200 font-bold animate-pulse">HAVA KILICI M1</span>
+            <div class="w-28 sm:w-40">
+                <div class="flex items-center justify-between mb-1">
+                    <h1 class="text-[11px] sm:text-xs font-semibold text-stone-100">Savaşçı</h1>
+                    <span id="aura-badge" class="hidden text-[9px] text-amber-300">Hava Kılıcı</span>
                 </div>
-                <div class="w-28 sm:w-44 space-y-1 mt-1">
-                    <div class="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-red-900/70">
-                        <div class="h-full bg-gradient-to-r from-red-800 via-red-500 to-rose-400 w-full"></div>
-                    </div>
-                    <div class="h-1 w-full bg-slate-950 rounded-full overflow-hidden border border-blue-900/70">
-                        <div class="h-full bg-gradient-to-r from-blue-800 via-blue-500 to-cyan-400 w-11/12"></div>
-                    </div>
-                </div>
+                <div class="hud-bar rounded-sm mb-1"><div class="h-full bg-red-700 w-full"></div></div>
+                <div class="hud-bar rounded-sm"><div class="h-full bg-blue-700 w-11/12"></div></div>
             </div>
         </div>
 
-        <div class="rpg-panel rounded-xl p-1 flex flex-wrap items-center justify-end gap-1 pointer-events-auto max-w-full">
-            <button onclick="setCameraView('default')" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-700/70 transition">Aksiyon</button>
-            <button onclick="setCameraView('fullbody')" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 hover:bg-cyan-500/20 hover:text-cyan-200 border border-slate-700/70 transition">Tam Boy</button>
-            <button onclick="setCameraView('closeup')" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-700/70 transition">Yüz & Zırh</button>
-            <button onclick="setCameraView('hand')" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-700/70 transition">El & Silah</button>
-            <button id="anatomy-toggle-btn" onclick="toggleAnatomyView()" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-cyan-500/15 text-cyan-100 border border-cyan-300/50 hover:bg-cyan-400/25 transition" aria-pressed="true">Zırhı Göster</button>
-            <button id="sound-btn" onclick="toggleAudio()" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-900/90 text-amber-300 border border-slate-700/70 transition" title="Ses Efektleri">🔊</button>
-            <button id="toggle-panel-btn" onclick="toggleInspector()" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500/30 transition flex items-center gap-1">
-                <span>⚙️ Ekipman</span>
+        <div class="rpg-panel rounded p-1 flex items-center gap-1 pointer-events-auto">
+            <button id="sound-btn" onclick="toggleAudio()" class="w-8 h-8 rounded-sm bg-stone-900 border border-stone-600 text-stone-200 flex items-center justify-center" title="Ses" aria-label="Sesi aç veya kapat" aria-pressed="false">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path id="sound-muted-mark" class="hidden" d="m16 9 5 6m0-6-5 6"/>
+                </svg>
             </button>
-            <select id="export-kind-select" aria-label="Dışa aktarılacak varlık" class="max-w-28 sm:max-w-40 bg-slate-950/95 border border-emerald-400/50 rounded-lg px-1.5 py-1 text-[10px] sm:text-[11px] text-emerald-100 focus:outline-none focus:border-emerald-300">
-                <option value="character">Karakter + animasyon</option>
-                <option value="armor">Zırh seti</option>
-                <option value="sword">Kılıç</option>
-            </select>
-            <button id="header-export-btn" onclick="exportWarriorGLB(this)" class="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/50 hover:bg-emerald-500/30 transition flex items-center gap-1" title="Seçili varlığı GLB olarak indir">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
-                <span>GLB İndir</span>
+            <button id="toggle-panel-btn" onclick="toggleInspector()" class="w-8 h-8 rounded-sm bg-stone-900 border border-stone-600 text-stone-200 flex items-center justify-center" title="Ekipman" aria-label="Ekipmanı aç" aria-expanded="false">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M8 4h8l1 3 3 2v11H4V9l3-2 1-3Z"/><path d="M8 4c0 3 1.5 5 4 5s4-2 4-5M8 13h8"/>
+                </svg>
             </button>
-            <a id="prepared-glb-download" class="hidden px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-emerald-500 text-slate-950 border border-emerald-300 hover:bg-emerald-400 transition" role="button">Hazır GLB'yi indir</a>
-            <span id="header-export-status" class="hidden fixed top-14 right-2 z-50 max-w-[calc(100vw-1rem)] rounded-lg border border-emerald-400/50 bg-slate-950/95 px-3 py-2 text-[11px] font-semibold text-emerald-100 shadow-xl" role="status" aria-live="polite"></span>
         </div>
     </header>
 
     <div class="fixed top-16 left-0 right-0 z-20 flex justify-center pointer-events-none">
-        <div id="combo-indicator" class="opacity-0 transition-all duration-200 rpg-panel px-4 py-1 rounded-full text-[11px] sm:text-xs font-rpg font-bold tracking-widest text-amber-300 border border-amber-400/80 shadow-lg">
-            KOMBO VURUŞU #1
+        <div id="combo-indicator" class="opacity-0 transition-all duration-200 rpg-panel px-3 py-1 rounded text-[11px] font-semibold text-amber-200">
+            Kombo 1
         </div>
     </div>
 
-    <aside id="inspector-panel" class="hidden fixed top-16 right-2.5 z-40 w-72 sm:w-80 rpg-panel rounded-xl p-3.5 transition-all duration-300 pointer-events-auto max-h-[calc(100vh-180px)] overflow-y-auto">
-        <div class="flex items-center justify-between border-b border-amber-500/25 pb-2 mb-3">
-            <h2 class="font-rpg text-xs font-bold text-amber-300 tracking-wider uppercase">Seviye & Ekipman Gelişimi</h2>
+    <aside id="inspector-panel" class="hidden fixed top-14 right-2 z-40 w-72 sm:w-80 rpg-panel rounded p-3 pointer-events-auto max-h-[calc(100vh-160px)] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-amber-700/40 pb-2 mb-3">
+            <h2 class="text-sm font-semibold text-amber-200">Ekipman</h2>
             <button onclick="toggleInspector()" class="text-slate-400 hover:text-white text-xs px-1.5">✕</button>
         </div>
 
         <div class="space-y-3 text-xs">
             <div>
-                <label class="block text-amber-300/90 font-semibold mb-1.5">Hızlı Seviye Seti Seçimi</label>
-                <div class="grid grid-cols-2 gap-1.5">
-                    <button onclick="applyEquipmentPreset('lv1')" class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-amber-500/20 border border-amber-500/40 text-amber-200 font-semibold text-[11px] transition">Lv.1 Başlangıç (+0)</button>
-                    <button onclick="applyEquipmentPreset('lv30')" class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-amber-500/20 border border-slate-700 text-slate-200 font-semibold text-[11px] transition">Lv.30 Dolunay (+6)</button>
-                    <button onclick="applyEquipmentPreset('lv70')" class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-amber-500/20 border border-slate-700 text-slate-200 font-semibold text-[11px] transition">Lv.70 Siyah Çelik (+9)</button>
-                    <button onclick="applyEquipmentPreset('lv105')" class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-amber-500/20 border border-slate-700 text-slate-200 font-semibold text-[11px] transition">Lv.105 Mavi Çelik (+9)</button>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-slate-300 font-medium mb-1">Silah Seçimi (Lv.1 - Lv.105)</label>
-                <select id="sword-select" onchange="changeSwordType(this.value)" class="w-full bg-slate-950 border border-amber-500/40 rounded-lg px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
-                    <option value="longsword" selected>Lv.1 Uzun Kılıç +0 (Başlangıç Demir Kılıç)</option>
-                    <option value="broadsword">Lv.20 Geniş Kılıç +6 (Gümüş İşlemeli Pala)</option>
-                    <option value="greatsword">Lv.30 Dolunay Kılıcı +9 (Hilal Kesitli Efsane)</option>
-                    <option value="poison">Lv.75 Zehir Kılıcı +9 (Karanlık Kor & Kan Oluğu)</option>
-                    <option value="triton">Lv.90 Triton / Sirius Kılıcı +9 (Mavi Aura)</option>
+                <label class="block text-stone-300 font-medium mb-1">Silah</label>
+                <select id="sword-select" onchange="changeSwordType(this.value)" class="w-full bg-stone-950 border border-stone-600 rounded-sm px-2.5 py-1.5 text-stone-100 focus:outline-none focus:border-amber-600">
+                    <option value="longsword" selected>Uzun Kılıç +0</option>
+                    <option value="broadsword">Geniş Kılıç +6</option>
+                    <option value="greatsword">Dolunay Kılıcı +9</option>
+                    <option value="poison">Zehir Kılıcı +9</option>
+                    <option value="triton">Sirius Kılıcı +9</option>
                 </select>
             </div>
 
             <div>
-                <label class="block text-slate-300 font-medium mb-1">Zırh Seti (Lv.1 - Lv.105)</label>
-                <select id="armor-select" onchange="changeArmorTheme(this.value)" class="w-full bg-slate-950 border border-amber-500/40 rounded-lg px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
-                    <option value="monk" selected>Lv.1 Keşiş Plaka Zırh +0 (Deri Tunik & Demir Plaka)</option>
-                    <option value="tiger">Lv.18 Kaplan Plaka Zırh +6 (Bronz & Kaplan İşleme)</option>
-                    <option value="dragonred">Lv.42 Ejderha Plaka Zırh +8 (Kızıl Çelik & Altın)</option>
-                    <option value="blacksteel">Lv.70 Siyah Çelik Zırh +9 (Antrasit Çelik & +9 Parlama)</option>
-                    <option value="bluesteel">Lv.105 Mavi Çelik Zırh +9 (Gümüş & Mavi Aura)</option>
+                <label class="block text-stone-300 font-medium mb-1">Zırh</label>
+                <select id="armor-select" onchange="changeArmorTheme(this.value)" class="w-full bg-stone-950 border border-stone-600 rounded-sm px-2.5 py-1.5 text-stone-100 focus:outline-none focus:border-amber-600">
+                    <option value="monk" selected>Keşiş Zırhı +0</option>
+                    <option value="tiger">Kaplan Zırhı +6</option>
+                    <option value="dragonred">Ejderha Zırhı +8</option>
+                    <option value="blacksteel">Siyah Çelik Zırh +9</option>
+                    <option value="bluesteel">Mavi Çelik Zırh +9</option>
                 </select>
             </div>
 
             <div>
-                <label class="block text-slate-300 font-medium mb-1">Başlık / Miğfer Tipi</label>
-                <select id="helmet-select" onchange="changeHelmetMode(this.value)" class="w-full bg-slate-950 border border-amber-500/40 rounded-lg px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
-                    <option value="none" selected>Lv.1 Başlıksız (Gerçekçi Savaşçı Yüzü & Saçı)</option>
-                    <option value="band">Lv.1 Geleneksel Demir Alınlık +0 (Yüz Görünür)</option>
-                    <option value="crown">Lv.41 Boynuzlu Savaşçı Miğferi +9 (Yüz Görünür)</option>
-                    <option value="full">Lv.80 Kapalı Şövalye Vizörü (Tam Miğfer)</option>
+                <label class="block text-stone-300 font-medium mb-1">Miğfer</label>
+                <select id="helmet-select" onchange="changeHelmetMode(this.value)" class="w-full bg-stone-950 border border-stone-600 rounded-sm px-2.5 py-1.5 text-stone-100 focus:outline-none focus:border-amber-600">
+                    <option value="none" selected>Yok</option>
+                    <option value="band">Alınlık</option>
+                    <option value="crown">Boynuzlu Miğfer</option>
+                    <option value="full">Kapalı Miğfer</option>
                 </select>
             </div>
 
-            <div>
-                <label class="block text-slate-300 font-medium mb-1">Düz Zemin Şablonu</label>
-                <select id="ground-select" onchange="changeGroundStyle(this.value)" class="w-full bg-slate-950 border border-amber-500/40 rounded-lg px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
-                    <option value="stone">Köy Meydanı (Arnavut Taş Zemin)</option>
-                    <option value="sand">Çöl / Ardream Toprak Zemin</option>
-                    <option value="grid">Geliştirici Grid Şablonu (Mat Siyah/Altın)</option>
-                </select>
-            </div>
-
-            <div class="pt-1.5 space-y-2 border-t border-slate-800/80">
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-300">Saldırı & Animasyon Hızı</span>
-                    <span id="speed-val" class="text-amber-300 font-mono">1.00x</span>
+            <details class="border-t border-stone-700 pt-2">
+                <summary class="cursor-pointer text-stone-400">Modeli dışa aktar</summary>
+                <div class="pt-2">
+                    <select id="export-kind-select" aria-label="Dışa aktarılacak varlık" class="w-full bg-stone-950 border border-stone-600 rounded-sm px-2 py-1.5 text-stone-100">
+                        <option value="character">Karakter</option>
+                        <option value="armor">Zırh</option>
+                        <option value="sword">Kılıç</option>
+                    </select>
+                    <button id="export-character-btn" onclick="exportWarriorGLB(this)" class="mt-2 w-full px-3 py-1.5 rounded-sm bg-stone-800 border border-stone-600 text-stone-200">Dışa aktar</button>
+                    <a id="prepared-glb-download" class="hidden mt-2 px-2 py-1 rounded-sm bg-stone-700 text-stone-100" role="button">İndir</a>
+                    <p id="export-status" class="mt-1.5 min-h-4 text-[10px] text-stone-400" role="status" aria-live="polite"></p>
                 </div>
-                <input id="anim-speed" type="range" min="0.7" max="1.4" step="0.05" value="1.00" oninput="updateAnimSpeed(this.value)" class="w-full accent-amber-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg">
-
-                <div class="flex items-center justify-between pt-1">
-                    <span class="text-slate-300">Klan Pelerini</span>
-                    <input type="checkbox" id="cape-toggle" onchange="toggleCape(this.checked)" class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-300">Karanlık Metin Taşı (Hedef)</span>
-                    <input type="checkbox" id="metin-toggle" checked onchange="toggleMetinStone(this.checked)" class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
-                </div>
-            </div>
-            <div class="pt-2 border-t border-slate-800/80">
-                <button id="export-character-btn" onclick="exportWarriorGLB(this)" class="w-full px-3 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/60 text-amber-200 font-semibold text-[11px] transition">Karakteri ve animasyonları GLB indir</button>
-                <p id="export-status" class="mt-1.5 min-h-4 text-[10px] text-slate-400" role="status" aria-live="polite"></p>
-            </div>
+            </details>
         </div>
     </aside>
 
-    <!-- Left Virtual Analog Joystick -->
     <div id="joystick-zone" title="Yürümek ve Koşmak için Sürükleyin">
-        <div class="absolute inset-2 rounded-full border border-amber-400/20 pointer-events-none"></div>
-        <div class="absolute text-[8px] font-rpg text-amber-300/60 top-1.5 pointer-events-none">KOŞ</div>
-        <div class="absolute text-[8px] font-rpg text-amber-300/60 bottom-1.5 pointer-events-none">GERİ</div>
+        <div class="absolute inset-2 rounded-full border border-amber-700/30 pointer-events-none"></div>
         <div id="joystick-knob"></div>
     </div>
 
-    <!-- Mobile-Safe Right Combat Cluster (Positioned safely away from bottom-right browser floating icons) -->
     <div class="fixed bottom-6 right-20 sm:bottom-8 sm:right-16 z-30 w-44 h-44 sm:w-52 sm:h-52 pointer-events-none select-none">
-        <!-- Skill 1: Hava Kılıcı -->
-        <button id="btn-skill-1" onpointerdown="triggerSkill('aura', event)" class="skill-btn pointer-events-auto absolute bottom-0 right-24 sm:right-28 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center shadow-xl">
+        <button id="btn-skill-1" onpointerdown="triggerSkill('aura', event)" aria-label="Hava Kılıcı" title="Hava Kılıcı" class="skill-btn pointer-events-auto absolute bottom-0 right-24 sm:right-28 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center shadow-md">
             <span class="absolute -top-1 -right-1 bg-slate-950 border border-amber-400 text-[9px] font-bold text-amber-300 w-4 h-4 rounded-full flex items-center justify-center">1</span>
             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 drop-shadow" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 23a7.5 7.5 0 0 1-5.138-12.963C8.204 8.774 11.5 6.5 11 1.5c6 4 9 8 3 14 1 0 2.5 0 5-2.47.27.773.5 1.604.5 2.47A7.5 7.5 0 0 1 12 23z"/>
             </svg>
-            <span class="text-[7px] sm:text-[8px] text-amber-100 font-bold leading-none mt-0.5">Hava K.</span>
         </button>
 
-        <!-- Skill 2: Kılıç Çevirme -->
-        <button id="btn-skill-2" onpointerdown="triggerSkill('spin', event)" class="skill-btn pointer-events-auto absolute bottom-12 right-24 sm:bottom-16 sm:right-28 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center shadow-xl">
+        <button id="btn-skill-2" onpointerdown="triggerSkill('spin', event)" aria-label="Çevirme" title="Çevirme" class="skill-btn pointer-events-auto absolute bottom-12 right-24 sm:bottom-16 sm:right-28 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center shadow-md">
             <span class="absolute -top-1 -right-1 bg-slate-950 border border-amber-400 text-[9px] font-bold text-amber-300 w-4 h-4 rounded-full flex items-center justify-center">2</span>
             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
-            <span class="text-[7px] sm:text-[8px] text-amber-100 font-bold leading-none mt-0.5">Çevirme</span>
         </button>
 
-        <!-- Skill 3: Üç Yönlü Kesme -->
-        <button id="btn-skill-3" onpointerdown="triggerSkill('triple', event)" class="skill-btn pointer-events-auto absolute bottom-24 right-16 sm:bottom-28 sm:right-20 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center shadow-xl">
+        <button id="btn-skill-3" onpointerdown="triggerSkill('triple', event)" aria-label="Üç yönlü" title="Üç yönlü" class="skill-btn pointer-events-auto absolute bottom-24 right-16 sm:bottom-28 sm:right-20 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center shadow-md">
             <span class="absolute -top-1 -right-1 bg-slate-950 border border-amber-400 text-[9px] font-bold text-amber-300 w-4 h-4 rounded-full flex items-center justify-center">3</span>
             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
-            <span class="text-[7px] sm:text-[8px] text-amber-100 font-bold leading-none mt-0.5">3 Yönlü</span>
         </button>
 
-        <!-- Skill 4: Hamle -->
-        <button id="btn-skill-4" onpointerdown="triggerSkill('dash', event)" class="skill-btn pointer-events-auto absolute bottom-24 right-1 sm:bottom-28 sm:right-2 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center shadow-xl">
+        <button id="btn-skill-4" onpointerdown="triggerSkill('dash', event)" aria-label="Hamle" title="Hamle" class="skill-btn pointer-events-auto absolute bottom-24 right-1 sm:bottom-28 sm:right-2 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center shadow-md">
             <span class="absolute -top-1 -right-1 bg-slate-950 border border-amber-400 text-[9px] font-bold text-amber-300 w-4 h-4 rounded-full flex items-center justify-center">4</span>
             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
             </svg>
-            <span class="text-[7px] sm:text-[8px] text-amber-100 font-bold leading-none mt-0.5">Hamle</span>
         </button>
 
-        <!-- GIANT PRIMARY ATTACK BUTTON -->
         <button id="btn-combo"
                 onpointerdown="startAttackHold(event)"
                 onpointerup="stopAttackHold(event)"
                 onpointercancel="stopAttackHold(event)"
                 onpointerleave="stopAttackHold(event)"
-                class="attack-main-btn pointer-events-auto absolute bottom-0 right-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full flex flex-col items-center justify-center select-none">
-            <svg class="w-8 h-8 sm:w-10 sm:h-10 text-amber-100 drop-shadow-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                aria-label="Saldır" title="Saldır" class="attack-main-btn pointer-events-auto absolute bottom-0 right-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full flex flex-col items-center justify-center select-none">
+            <svg class="w-7 h-7 text-stone-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/>
             </svg>
-            <span class="font-rpg text-[11px] sm:text-xs font-black text-white tracking-wider drop-shadow mt-0.5">SALDIR</span>
-            <span class="text-[7px] sm:text-[8px] text-amber-200 font-semibold leading-none">Basılı Tut</span>
+            <span class="text-[9px] font-semibold text-stone-100">Saldır</span>
         </button>
     </div>
 
@@ -341,6 +286,10 @@
         let swordGroup, bladeMesh, bladeEdgeGlow, swordAuraLight, swordTipMarker, swordBaseMarker, swordMidMarker;
         let weaponFlameSprites = [];
         let groundMesh, playerTargetRing, metinStoneGroup, metinRockMesh;
+        let villageWorldGroup, villageEffectsGroup, villagePavingMeshes = [], villageLanternLights = [], villageWaterMeshes = [], villageVillagers = [], villageGrassMeshes = [], villageSmokePuffs = [], villageCollisionAreas = [];
+        let directionalSunLight;
+        let reducedGraphics = false;
+        const performanceState = { sampleTime: 0, sampleFrames: 0, lowFrameWindows: 0, lastFrameTime: 0, reduced: false };
         let plusNineParticles;
         let slashTrailMesh, slashTrailGeometry, slashTrailHistory = [];
 
@@ -381,13 +330,13 @@
 
         const camState = {
             theta: 0.32,
-            phi: 1.28,
-            radius: 3.6,
-            targetRadius: 3.6,
-            fov: 38,
-            targetFov: 38,
-            lookAtOffset: new THREE.Vector3(0, 1.02, 0),
-            targetLookAt: new THREE.Vector3(0, 1.02, 0),
+            phi: 1.22,
+            radius: 17.5,
+            targetRadius: 17.5,
+            fov: 49,
+            targetFov: 49,
+            lookAtOffset: new THREE.Vector3(0, 1.24, 0),
+            targetLookAt: new THREE.Vector3(0, 1.24, 0),
             punchOffset: new THREE.Vector3(),
             punchVel: new THREE.Vector3(),
             isDragging: false,
@@ -409,6 +358,14 @@
             }
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             return audioCtx;
+        }
+
+        function isVillagePositionBlocked(position) {
+            return villageCollisionAreas.some(area => {
+                const dx = position.x - area.x;
+                const dz = position.z - area.z;
+                return dx * dx + dz * dz < area.radius * area.radius;
+            });
         }
 
         function playCombatSound(type) {
@@ -509,7 +466,17 @@
 
         function toggleAudio() {
             state.audioEnabled = !state.audioEnabled;
-            document.getElementById('sound-btn').innerText = state.audioEnabled ? '🔊' : '🔇';
+            const button = document.getElementById('sound-btn');
+            button.setAttribute('aria-pressed', String(!state.audioEnabled));
+            button.title = state.audioEnabled ? 'Sesi kapat' : 'Sesi aç';
+            document.getElementById('sound-muted-mark').classList.toggle('hidden', state.audioEnabled);
+        }
+
+        function toggleInspector() {
+            const panel = document.getElementById('inspector-panel');
+            const button = document.getElementById('toggle-panel-btn');
+            const isOpen = panel.classList.toggle('hidden') === false;
+            button.setAttribute('aria-expanded', String(isOpen));
         }
 
         function spawnDamageNumber(dmg, isCrit = true) {
@@ -981,6 +948,33 @@
             const envMap = new THREE.CanvasTexture(envCanvas);
             envMap.mapping = THREE.EquirectangularReflectionMapping;
 
+            const skyCanvas = document.createElement('canvas');
+            skyCanvas.width = 1024;
+            skyCanvas.height = 512;
+            const skyCtx = skyCanvas.getContext('2d');
+            const skyGradient = skyCtx.createLinearGradient(0, 0, 0, 512);
+            skyGradient.addColorStop(0, '#607f91');
+            skyGradient.addColorStop(0.33, '#96acb0');
+            skyGradient.addColorStop(0.49, '#c8c8b7');
+            skyGradient.addColorStop(0.54, '#e0d2b7');
+            skyGradient.addColorStop(1, '#849697');
+            skyCtx.fillStyle = skyGradient;
+            skyCtx.fillRect(0, 0, 1024, 512);
+            for (let i = 0; i < 18; i++) {
+                const x = Math.random() * 1024;
+                const y = 35 + Math.random() * 195;
+                const radius = 12 + Math.random() * 44;
+                const cloud = skyCtx.createRadialGradient(x, y, 1, x, y, radius);
+                cloud.addColorStop(0, `rgba(255, 250, 234, ${0.055 + Math.random() * 0.055})`);
+                cloud.addColorStop(0.55, 'rgba(255, 250, 234, 0.025)');
+                cloud.addColorStop(1, 'rgba(255, 250, 234, 0)');
+                skyCtx.fillStyle = cloud;
+                skyCtx.fillRect(x - radius, y - radius * 0.5, radius * 2, radius);
+            }
+            const skyTexture = new THREE.CanvasTexture(skyCanvas);
+            skyTexture.mapping = THREE.EquirectangularReflectionMapping;
+            skyTexture.encoding = THREE.sRGBEncoding;
+
             // 2. Soft Volumetric Fire Aura Sprite Texture
             const fireCanvas = document.createElement('canvas');
             fireCanvas.width = 128;
@@ -1038,12 +1032,12 @@
 
             return {
                 envMap,
+                skyTexture,
                 fireSpriteTexture,
                 runeTexture,
                 sparkTexture,
                 chainmailTex: buildChainmailTexture(),
                 capeTexture: buildCapeTexture(),
-                groundTexture: buildGroundTexture('stone'),
                 faceTexture: buildRealisticFaceTexture(),
                 cuirassTexture: buildArmorCuirassTexture('monk')
             };
@@ -1052,35 +1046,45 @@
         function initScene() {
             const container = document.getElementById('canvas-container');
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x090d14);
-            scene.fog = new THREE.FogExp2(0x090d14, 0.020);
+            scene.background = new THREE.Color(0x82979b);
+            scene.fog = new THREE.FogExp2(0xb9c2b6, 0.0032);
 
             camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 150);
             clock = new THREE.Clock();
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+            const isLowPowerDevice = window.innerWidth < 1000
+                || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+                || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+            reducedGraphics = isLowPowerDevice;
+            renderer = new THREE.WebGLRenderer({
+                antialias: !isLowPowerDevice,
+                powerPreference: 'high-performance',
+                stencil: false
+            });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, isLowPowerDevice ? 0.9 : 1.5));
+            renderer.shadowMap.enabled = !isLowPowerDevice;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.22;
+            renderer.toneMappingExposure = 1.02;
             container.appendChild(renderer.domElement);
 
             const textures = createProceduralTextures();
             materials.textures = textures;
+            scene.background = textures.skyTexture;
 
-            const hemiLight = new THREE.HemisphereLight(0xf1f5f9, 0x1e1b18, 1.25);
+            const hemiLight = new THREE.HemisphereLight(0xe5edf0, 0x51483a, 1.15);
             scene.add(hemiLight);
 
-            const keyLight = new THREE.DirectionalLight(0xfff5e4, 2.25);
-            keyLight.position.set(5.5, 14, 9);
-            keyLight.castShadow = true;
-            keyLight.shadow.mapSize.width = 2048;
-            keyLight.shadow.mapSize.height = 2048;
+            directionalSunLight = new THREE.DirectionalLight(0xffe2bb, 1.55);
+            directionalSunLight.position.set(-15, 34, 24);
+            const keyLight = directionalSunLight;
+            keyLight.castShadow = !isLowPowerDevice;
+            keyLight.shadow.mapSize.width = reducedGraphics ? 512 : 1024;
+            keyLight.shadow.mapSize.height = reducedGraphics ? 512 : 1024;
             keyLight.shadow.camera.near = 1;
-            keyLight.shadow.camera.far = 35;
-            const d = 8;
+            keyLight.shadow.camera.far = 90;
+            const d = 24;
             keyLight.shadow.camera.left = -d;
             keyLight.shadow.camera.right = d;
             keyLight.shadow.camera.top = d;
@@ -1088,12 +1092,14 @@
             keyLight.shadow.bias = -0.0005;
             scene.add(keyLight);
 
-            const rimLight = new THREE.DirectionalLight(0x60a5fa, 1.35);
-            rimLight.position.set(-6, 6, -7);
+            scene.add(new THREE.AmbientLight(0xd5d1c3, 0.32));
+            const rimLight = new THREE.DirectionalLight(0x9ac3d2, 0.3);
+            rimLight.position.set(16, 10, -18);
             scene.add(rimLight);
 
             createMaterials(textures);
-            createFlatGroundTemplate(textures.groundTexture);
+            createFlatGroundTemplate();
+            createVillageWorld();
             createWarriorCharacter();
             createSlashTrailSystem();
             createSkillVFXSystems(textures);
@@ -1103,6 +1109,7 @@
 
             setupInteractionEvents();
             setupMobileJoystick();
+            setCameraView('default');
             updateCameraPosition(0.016);
         }
 
@@ -1164,10 +1171,6 @@
                 if (capeToggle) capeToggle.addEventListener('change', refreshUploadedAssetVisibility);
                 refreshUploadedAssetVisibility();
 
-                const status = document.getElementById('header-export-status');
-                status.textContent = 'İçe aktarılan GLB modelleri geçici olarak gizlendi; prosedürel model gösteriliyor.';
-                status.classList.remove('hidden');
-                setTimeout(() => status.classList.add('hidden'), 4500);
             } catch (error) {
                 const detail = error instanceof Error ? error.message : String(error);
                 console.warn('Optional uploaded GLB unavailable; using procedural character:', detail);
@@ -1344,6 +1347,31 @@
             });
         }
 
+        function animateVillage(elapsedTime) {
+            villageLanternLights.forEach((light, index) => {
+                light.intensity = 1.05 + Math.sin(elapsedTime * 3.4 + index * 1.7) * 0.14 + Math.sin(elapsedTime * 7.1 + index) * 0.05;
+            });
+            villageWaterMeshes.forEach((water, index) => {
+                water.material.opacity = 0.82 + Math.sin(elapsedTime * 1.8 + index) * 0.06;
+            });
+            villageVillagers.forEach(npc => {
+                const phase = elapsedTime * 1.7 + npc.userData.idlePhase;
+                npc.position.y = npc.userData.baseY + Math.sin(phase * 0.8) * 0.012;
+                npc.rotation.y = npc.userData.baseFacing + Math.sin(phase * 0.52) * 0.018;
+            });
+            villageSmokePuffs.forEach(puff => {
+                const progress = (elapsedTime * 0.12 + puff.phase) % 1;
+                puff.sprite.position.set(
+                    puff.origin.x + Math.sin(elapsedTime * 1.3 + puff.phase * 8) * (0.16 + progress * 0.42),
+                    puff.origin.y + progress * 3.8,
+                    puff.origin.z + Math.cos(elapsedTime + puff.phase * 6) * (0.12 + progress * 0.3)
+                );
+                const size = 0.26 + progress * 0.82;
+                puff.sprite.scale.set(size, size, 1);
+                puff.material.opacity = Math.sin(progress * Math.PI) * 0.22;
+            });
+        }
+
         function createSkinTextures() {
             const size = 1024;
             function createNoiseTile(resolution, seed) {
@@ -1458,17 +1486,1496 @@
             return { color, bump, roughness };
         }
 
-        function createFlatGroundTemplate(groundTexture) {
-            const groundGeo = new THREE.PlaneGeometry(140, 140);
+        function createFlatGroundTemplate() {
+            const groundGeo = new THREE.PlaneGeometry(240, 240, 192, 192);
+            const positions = groundGeo.attributes.position;
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const z = -positions.getY(i);
+                positions.setZ(i, getVillageTerrainHeight(x, z));
+            }
+            groundGeo.computeVertexNormals();
             const groundMat = new THREE.MeshStandardMaterial({
-                map: groundTexture,
-                roughness: 0.82,
-                metalness: 0.10
+                map: buildVillageGrassTexture(),
+                roughness: 0.96,
+                bumpMap: buildVillageGrassTexture(),
+                bumpScale: 0.035,
+                metalness: 0.0
             });
             groundMesh = new THREE.Mesh(groundGeo, groundMat);
             groundMesh.rotation.x = -Math.PI / 2;
             groundMesh.receiveShadow = true;
             scene.add(groundMesh);
+        }
+
+        function getVillageTerrainHeight(x, z) {
+            if (Math.abs(x) < 4.4 || Math.abs(z) < 3.8) return 0;
+            if (([19, 27].some(road => Math.abs(Math.abs(x) - road) < 2.9)
+                && Math.abs(z) < 56)
+                || ([19, 27, 35].some(road => Math.abs(Math.abs(z) - road) < 2.8)
+                    && Math.abs(x) < 52)) return 0;
+            const distance = Math.hypot(x, z);
+            const outskirts = THREE.MathUtils.smoothstep(distance, 42, 82);
+            const rolling = Math.sin(x * 0.075 + z * 0.028) * 0.52
+                + Math.cos(z * 0.09 - x * 0.035) * 0.38
+                + Math.sin((x + z) * 0.13) * 0.16;
+            return outskirts * (0.24 + rolling * 1.35);
+        }
+
+        function buildVillageGrassTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const base = ctx.createLinearGradient(0, 0, 512, 512);
+            base.addColorStop(0, '#536044');
+            base.addColorStop(0.48, '#68734d');
+            base.addColorStop(1, '#414d3b');
+            ctx.fillStyle = base;
+            ctx.fillRect(0, 0, 512, 512);
+
+            for (let i = 0; i < 9000; i++) {
+                const x = Math.random() * 512;
+                const y = Math.random() * 512;
+                const shade = Math.random() > 0.5 ? 'rgba(184, 177, 116, 0.16)' : 'rgba(24, 39, 25, 0.2)';
+                ctx.strokeStyle = shade;
+                ctx.lineWidth = 1 + Math.random() * 1.4;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + (Math.random() - 0.5) * 5, y - 2 - Math.random() * 5);
+                ctx.stroke();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(7, 7);
+            texture.anisotropy = 8;
+            return texture;
+        }
+
+        function buildMetinStoneTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const base = ctx.createLinearGradient(0, 0, 512, 512);
+            base.addColorStop(0, '#625850');
+            base.addColorStop(0.48, '#35383a');
+            base.addColorStop(1, '#211c23');
+            ctx.fillStyle = base;
+            ctx.fillRect(0, 0, 512, 512);
+
+            for (let i = 0; i < 18000; i++) {
+                const value = Math.floor(38 + Math.random() * 105);
+                ctx.fillStyle = `rgba(${value}, ${value}, ${value + (Math.random() * 9)}, ${Math.random() * 0.28})`;
+                ctx.fillRect(Math.random() * 512, Math.random() * 512, 1 + Math.random() * 3, 1 + Math.random() * 3);
+            }
+
+            for (let i = 0; i < 14; i++) {
+                let x = Math.random() * 512;
+                let y = Math.random() * 512;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                for (let segment = 0; segment < 7; segment++) {
+                    x += (Math.random() - 0.5) * 56;
+                    y += 12 + Math.random() * 27;
+                    ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = 'rgba(217, 45, 29, 0.8)';
+                ctx.lineWidth = 2 + Math.random() * 5;
+                ctx.shadowColor = '#f04424';
+                ctx.shadowBlur = 12;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(255, 163, 68, 0.34)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            texture.anisotropy = 8;
+            return texture;
+        }
+
+        function buildChimneySmokeTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(64, 64, 6, 64, 64, 60);
+            gradient.addColorStop(0, 'rgba(224, 219, 207, 0.48)');
+            gradient.addColorStop(0.46, 'rgba(190, 192, 184, 0.25)');
+            gradient.addColorStop(1, 'rgba(145, 154, 152, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 128, 128);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function buildPlasterTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#e8dfcc';
+            ctx.fillRect(0, 0, 512, 512);
+
+            for (let i = 0; i < 2300; i++) {
+                const x = Math.random() * 512;
+                const y = Math.random() * 512;
+                const radius = 1 + Math.random() * 12;
+                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(91, 70, 48, 0.045)' : 'rgba(255, 251, 231, 0.17)';
+                ctx.beginPath();
+                ctx.ellipse(x, y, radius, radius * (0.35 + Math.random()), Math.random(), 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.lineCap = 'round';
+            for (let i = 0; i < 36; i++) {
+                const x = Math.random() * 512;
+                const y = Math.random() * 512;
+                ctx.strokeStyle = 'rgba(105, 81, 54, 0.16)';
+                ctx.lineWidth = 0.7 + Math.random() * 1.3;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + (Math.random() - 0.5) * 22, y + 4 + Math.random() * 26);
+                ctx.lineTo(x + (Math.random() - 0.5) * 30, y + 10 + Math.random() * 38);
+                ctx.stroke();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.anisotropy = 8;
+            return texture;
+        }
+
+        function buildTimberTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            const base = ctx.createLinearGradient(0, 0, 512, 0);
+            base.addColorStop(0, '#c5a27b');
+            base.addColorStop(0.5, '#ead2a5');
+            base.addColorStop(1, '#b59068');
+            ctx.fillStyle = base;
+            ctx.fillRect(0, 0, 512, 256);
+
+            for (let i = 0; i < 110; i++) {
+                const y = Math.random() * 256;
+                const amplitude = 1 + Math.random() * 5;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                for (let x = 0; x <= 512; x += 24) {
+                    ctx.lineTo(x, y + Math.sin(x * 0.025 + i) * amplitude + Math.sin(x * 0.009 + i * 3) * amplitude * 0.6);
+                }
+                ctx.strokeStyle = i % 4 === 0 ? 'rgba(57, 33, 19, 0.32)' : 'rgba(93, 58, 31, 0.15)';
+                ctx.lineWidth = i % 8 === 0 ? 2.2 : 0.8;
+                ctx.stroke();
+            }
+
+            for (let i = 0; i < 5; i++) {
+                const x = 35 + Math.random() * 440;
+                const y = 20 + Math.random() * 216;
+                ctx.strokeStyle = 'rgba(66, 40, 23, 0.28)';
+                ctx.lineWidth = 1.5;
+                for (let ring = 0; ring < 4; ring++) {
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, 3 + ring * 2.6, 2 + ring * 1.5, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.anisotropy = 8;
+            return texture;
+        }
+
+        function buildVillageFabricTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#dfd1b4';
+            ctx.fillRect(0, 0, 512, 512);
+            for (let y = 0; y < 512; y += 4) {
+                ctx.fillStyle = y % 8 === 0 ? 'rgba(82, 66, 46, 0.08)' : 'rgba(255, 251, 239, 0.11)';
+                ctx.fillRect(0, y, 512, 1);
+            }
+            for (let x = 0; x < 512; x += 4) {
+                ctx.fillStyle = x % 8 === 0 ? 'rgba(69, 54, 38, 0.075)' : 'rgba(255, 250, 235, 0.1)';
+                ctx.fillRect(x, 0, 1, 512);
+            }
+            for (let i = 0; i < 850; i++) {
+                const x = Math.random() * 512;
+                const y = Math.random() * 512;
+                ctx.strokeStyle = 'rgba(91, 67, 44, 0.12)';
+                ctx.lineWidth = 0.7;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + (Math.random() - 0.5) * 6, y + 3 + Math.random() * 10);
+                ctx.stroke();
+            }
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.anisotropy = 8;
+            return texture;
+        }
+
+        function buildRoofTileTexture(baseHex) {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const base = [(baseHex >> 16) & 255, (baseHex >> 8) & 255, baseHex & 255];
+            ctx.fillStyle = '#211f1c';
+            ctx.fillRect(0, 0, 512, 512);
+
+            const tileW = 58;
+            const tileH = 40;
+            for (let row = -1; row < 14; row++) {
+                const offset = row % 2 === 0 ? 0 : tileW * 0.5;
+                for (let col = -1; col < 10; col++) {
+                    const x = col * tileW + offset + 2;
+                    const y = row * tileH + 2;
+                    const variation = 0.76 + Math.random() * 0.4;
+                    const color = base.map(channel => Math.max(0, Math.min(255, Math.round(channel * variation))));
+                    const gradient = ctx.createLinearGradient(x, y, x, y + tileH - 4);
+                    gradient.addColorStop(0, `rgb(${Math.min(255, color[0] + 22)}, ${Math.min(255, color[1] + 22)}, ${Math.min(255, color[2] + 22)})`);
+                    gradient.addColorStop(0.38, `rgb(${color[0]}, ${color[1]}, ${color[2]})`);
+                    gradient.addColorStop(1, `rgb(${Math.round(color[0] * 0.64)}, ${Math.round(color[1] * 0.64)}, ${Math.round(color[2] * 0.64)})`);
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, tileW - 3, tileH - 4, [9, 9, 4, 4]);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(22, 19, 18, 0.76)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.strokeStyle = 'rgba(246, 225, 191, 0.2)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x + 7, y + 4);
+                    ctx.lineTo(x + tileW - 12, y + 4);
+                    ctx.stroke();
+                    for (let speck = 0; speck < 6; speck++) {
+                        ctx.fillStyle = `rgba(25, 20, 18, ${Math.random() * 0.16})`;
+                        ctx.fillRect(x + Math.random() * (tileW - 8), y + Math.random() * (tileH - 8), 1.5, 1.5);
+                    }
+                }
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.anisotropy = 8;
+            return texture;
+        }
+
+        function buildVillagePavingTexture(style = 'stone') {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = style === 'sand' ? '#65563f' : style === 'grid' ? '#32383d' : '#514d45';
+            ctx.fillRect(0, 0, 512, 512);
+
+            const tones = style === 'sand'
+                ? [125, 111, 88]
+                : style === 'grid'
+                    ? [86, 91, 96]
+                    : [126, 123, 113];
+            const rows = 13;
+            const tileW = 49;
+            const tileH = 39;
+            for (let row = -1; row < rows; row++) {
+                const offset = row % 2 ? tileW / 2 : 0;
+                for (let col = -1; col < 12; col++) {
+                    const x = col * tileW + offset + 1.5 + (Math.random() - 0.5) * 3;
+                    const y = row * tileH + 1.5 + (Math.random() - 0.5) * 2;
+                    const tileWidth = tileW - 3 + (Math.random() - 0.5) * 5;
+                    const tileHeight = tileH - 3 + (Math.random() - 0.5) * 4;
+                    const tone = tones[0] + Math.floor(Math.random() * 24);
+                    const channels = [tone, tone + tones[1] - tones[0], tone + tones[2] - tones[0]];
+                    const shade = ctx.createLinearGradient(x, y, x + tileWidth, y + tileHeight);
+                    shade.addColorStop(0, `rgb(${Math.min(255, channels[0] + 13)}, ${Math.min(255, channels[1] + 13)}, ${Math.min(255, channels[2] + 13)})`);
+                    shade.addColorStop(0.55, `rgb(${channels[0]}, ${channels[1]}, ${channels[2]})`);
+                    shade.addColorStop(1, `rgb(${Math.round(channels[0] * 0.82)}, ${Math.round(channels[1] * 0.82)}, ${Math.round(channels[2] * 0.82)})`);
+                    ctx.fillStyle = shade;
+                    ctx.beginPath();
+                    ctx.moveTo(x + 3, y + 4);
+                    ctx.lineTo(x + tileWidth - 5, y + 2);
+                    ctx.lineTo(x + tileWidth - 2, y + tileHeight * 0.58);
+                    ctx.lineTo(x + tileWidth - 8, y + tileHeight - 3);
+                    ctx.lineTo(x + 5, y + tileHeight - 2);
+                    ctx.lineTo(x + 1, y + tileHeight * 0.38);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(34, 32, 28, 0.48)';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                    ctx.strokeStyle = 'rgba(238, 222, 190, 0.32)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x + 6, y + 6);
+                    ctx.lineTo(x + tileWidth * 0.58, y + 5);
+                    ctx.stroke();
+                    for (let chip = 0; chip < 5; chip++) {
+                        ctx.fillStyle = `rgba(29, 29, 27, ${Math.random() * 0.24})`;
+                        ctx.fillRect(x + Math.random() * tileWidth, y + Math.random() * tileHeight, 1.3 + Math.random() * 2.5, 1);
+                    }
+                }
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(1, 1);
+            texture.anisotropy = 8;
+            return texture;
+        }
+
+        function createVillageWorld() {
+            villageWorldGroup = new THREE.Group();
+            villageWorldGroup.name = 'YangShinVillage';
+            scene.add(villageWorldGroup);
+            villageEffectsGroup = new THREE.Group();
+            villageWorldGroup.add(villageEffectsGroup);
+
+            const mats = {
+                stone: new THREE.MeshStandardMaterial({ color: 0x827a6e, roughness: 0.94 }),
+                darkStone: new THREE.MeshStandardMaterial({ color: 0x655d52, roughness: 0.96 }),
+                plaster: [
+                    new THREE.MeshStandardMaterial({ color: 0xb69a72, roughness: 0.92 }),
+                    new THREE.MeshStandardMaterial({ color: 0xc0b18d, roughness: 0.94 }),
+                    new THREE.MeshStandardMaterial({ color: 0x997a5b, roughness: 0.95 }),
+                    new THREE.MeshStandardMaterial({ color: 0xa9a28a, roughness: 0.95 })
+                ],
+                timber: new THREE.MeshStandardMaterial({ color: 0x39261b, roughness: 0.86 }),
+                timberLight: new THREE.MeshStandardMaterial({ color: 0x69452b, roughness: 0.85 }),
+                roofs: [
+                    new THREE.MeshStandardMaterial({ color: 0x542d25, roughness: 0.87 }),
+                    new THREE.MeshStandardMaterial({ color: 0x68392c, roughness: 0.88 }),
+                    new THREE.MeshStandardMaterial({ color: 0x37434a, roughness: 0.84 }),
+                    new THREE.MeshStandardMaterial({ color: 0x62523a, roughness: 0.9 })
+                ],
+                iron: new THREE.MeshStandardMaterial({ color: 0x343b3c, metalness: 0.72, roughness: 0.36 }),
+                brass: new THREE.MeshStandardMaterial({ color: 0xb58a46, metalness: 0.72, roughness: 0.3 }),
+                wood: new THREE.MeshStandardMaterial({ color: 0x77502c, roughness: 0.84 }),
+                leaf: [
+                    new THREE.MeshStandardMaterial({ color: 0x2d4933, roughness: 0.98 }),
+                    new THREE.MeshStandardMaterial({ color: 0x3b5a37, roughness: 0.98 }),
+                    new THREE.MeshStandardMaterial({ color: 0x4a663b, roughness: 0.98 })
+                ],
+                water: new THREE.MeshStandardMaterial({ color: 0x577c80, roughness: 0.2, metalness: 0.18, transparent: true, opacity: 0.88 }),
+                warmWindow: new THREE.MeshStandardMaterial({ color: 0xffcc76, emissive: 0xff9e38, emissiveIntensity: 0.28, roughness: 0.3 }),
+                cloth: [
+                    new THREE.MeshStandardMaterial({ color: 0x8d3023, side: THREE.DoubleSide, roughness: 0.9 }),
+                    new THREE.MeshStandardMaterial({ color: 0x263b4a, side: THREE.DoubleSide, roughness: 0.9 }),
+                    new THREE.MeshStandardMaterial({ color: 0xa98a49, side: THREE.DoubleSide, roughness: 0.9 })
+                ]
+            };
+            const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+            const pavingTexture = buildVillagePavingTexture();
+            const pavingMat = new THREE.MeshStandardMaterial({ map: pavingTexture, roughness: 0.92, metalness: 0.04 });
+            const plasterTexture = buildPlasterTexture();
+            const timberTexture = buildTimberTexture();
+            const clothTexture = buildVillageFabricTexture();
+            const stoneTexture = buildVillagePavingTexture();
+            const npcBatchMaterials = {
+                cloth: new THREE.MeshStandardMaterial({ map: clothTexture, vertexColors: true, roughness: 0.94 }),
+                skin: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.86 }),
+                metal: new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.48, roughness: 0.46 })
+            };
+            mats.cloth.forEach(material => { material.userData.npcBatchClass = 'cloth'; });
+            mats.brass.userData.npcBatchClass = 'metal';
+            mats.iron.userData.npcBatchClass = 'metal';
+            mats.darkStone.userData.npcBatchClass = 'metal';
+            mats.timberLight.userData.npcBatchClass = 'skin';
+            mats.plaster.forEach(material => {
+                material.map = plasterTexture;
+                material.bumpMap = plasterTexture;
+                material.bumpScale = 0.018;
+            });
+            [mats.timber, mats.timberLight, mats.wood].forEach(material => {
+                material.map = timberTexture;
+                material.bumpMap = timberTexture;
+                material.bumpScale = 0.035;
+            });
+            mats.cloth.forEach(material => {
+                material.map = clothTexture;
+                material.bumpMap = clothTexture;
+                material.bumpScale = 0.012;
+            });
+            [mats.stone, mats.darkStone].forEach(material => {
+                material.map = stoneTexture;
+                material.bumpMap = stoneTexture;
+                material.bumpScale = 0.025;
+            });
+            mats.roofs.forEach(material => {
+                const color = material.color.getHex();
+                material.map = buildRoofTileTexture(color);
+                material.bumpMap = material.map;
+                material.bumpScale = 0.025;
+                material.color.set(0xffffff);
+            });
+
+            const addMesh = (parent, geometry, material, position, scale, rotationY = 0, castShadow = true) => {
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(position[0], position[1], position[2]);
+                if (scale) mesh.scale.set(scale[0], scale[1], scale[2]);
+                mesh.rotation.y = rotationY;
+                mesh.castShadow = castShadow;
+                mesh.receiveShadow = true;
+                parent.add(mesh);
+                return mesh;
+            };
+
+            const addBox = (parent, material, position, scale, rotationY = 0, castShadow = true) =>
+                addMesh(parent, boxGeo, material, position, scale, rotationY, castShadow);
+
+            const addCollisionArea = (x, z, radius) => villageCollisionAreas.push({ x, z, radius });
+
+            const mergeVillageMeshes = (sourceMeshes, root, outputParent, preserveGeometries = new Set()) => {
+                const inverseRoot = new THREE.Matrix4().copy(root.matrixWorld).invert();
+                const batches = new Map();
+                const sourceGeometries = new Set();
+                sourceMeshes.forEach(mesh => {
+                    sourceGeometries.add(mesh.geometry);
+                    const material = mesh.material;
+                    let batch = batches.get(material);
+                    if (!batch) {
+                        batch = { meshes: [], vertexCount: 0, indexCount: 0, hasColors: false };
+                        batches.set(material, batch);
+                    }
+                    batch.meshes.push(mesh);
+                    batch.vertexCount += mesh.geometry.attributes.position.count;
+                    batch.indexCount += mesh.geometry.index ? mesh.geometry.index.count : mesh.geometry.attributes.position.count;
+                    batch.hasColors = batch.hasColors || Boolean(mesh.geometry.attributes.color);
+                });
+
+                sourceMeshes.forEach(mesh => mesh.parent.remove(mesh));
+                sourceGeometries.forEach(geometry => {
+                    if (!preserveGeometries.has(geometry)) geometry.dispose();
+                });
+
+                batches.forEach((batch, material) => {
+                    const positions = new Float32Array(batch.vertexCount * 3);
+                    const normals = new Float32Array(batch.vertexCount * 3);
+                    const uvs = new Float32Array(batch.vertexCount * 2);
+                    const colors = batch.hasColors ? new Float32Array(batch.vertexCount * 3) : null;
+                    const indexArray = batch.vertexCount > 65535
+                        ? new Uint32Array(batch.indexCount)
+                        : new Uint16Array(batch.indexCount);
+                    let vertexOffset = 0;
+                    let indexOffset = 0;
+
+                    batch.meshes.forEach(source => {
+                        const geometry = source.geometry.clone();
+                        geometry.applyMatrix4(inverseRoot.clone().multiply(source.matrixWorld));
+                        const position = geometry.attributes.position;
+                        const normal = geometry.attributes.normal;
+                        const uv = geometry.attributes.uv;
+                        const color = geometry.attributes.color;
+                        positions.set(position.array, vertexOffset * 3);
+                        if (normal) normals.set(normal.array, vertexOffset * 3);
+                        if (uv) uvs.set(uv.array, vertexOffset * 2);
+                        if (color) colors.set(color.array, vertexOffset * 3);
+
+                        if (geometry.index) {
+                            for (let i = 0; i < geometry.index.count; i++) {
+                                indexArray[indexOffset++] = geometry.index.getX(i) + vertexOffset;
+                            }
+                        } else {
+                            for (let i = 0; i < position.count; i++) indexArray[indexOffset++] = vertexOffset + i;
+                        }
+                        vertexOffset += position.count;
+                        geometry.dispose();
+                    });
+
+                    const geometry = new THREE.BufferGeometry();
+                    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                    geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+                    geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+                    if (colors) geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                    geometry.setIndex(new THREE.BufferAttribute(indexArray, 1));
+                    geometry.computeBoundingSphere();
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.castShadow = false;
+                    mesh.receiveShadow = true;
+                    outputParent.add(mesh);
+                });
+            };
+
+            const addPaving = (width, depth, x, z, rotation = 0, y = 0.018) => {
+                const geometry = new THREE.PlaneGeometry(width, depth);
+                const uvs = geometry.attributes.uv;
+                for (let i = 0; i < uvs.count; i++) {
+                    uvs.setXY(i, uvs.getX(i) * width / 8, uvs.getY(i) * depth / 12);
+                }
+                uvs.needsUpdate = true;
+                const mesh = new THREE.Mesh(geometry, pavingMat);
+                mesh.rotation.x = -Math.PI / 2;
+                mesh.rotation.z = rotation;
+                mesh.position.set(x, y, z);
+                mesh.receiveShadow = true;
+                villageWorldGroup.add(mesh);
+                villagePavingMeshes.push(mesh);
+                return mesh;
+            };
+
+            const plazaGeometry = new THREE.CircleGeometry(14.5, 64);
+            const plazaUvs = plazaGeometry.attributes.uv;
+            for (let i = 0; i < plazaUvs.count; i++) {
+                plazaUvs.setXY(i, plazaUvs.getX(i) * 29 / 8, plazaUvs.getY(i) * 29 / 12);
+            }
+            plazaUvs.needsUpdate = true;
+            const plaza = new THREE.Mesh(plazaGeometry, pavingMat);
+            plaza.rotation.x = -Math.PI / 2;
+            plaza.position.y = 0.022;
+            plaza.receiveShadow = true;
+            villageWorldGroup.add(plaza);
+            villagePavingMeshes.push(plaza);
+            const plazaRim = new THREE.Mesh(
+                new THREE.RingGeometry(14.25, 14.55, 96),
+                new THREE.MeshStandardMaterial({ color: 0xc5ad79, map: pavingTexture, roughness: 0.82, metalness: 0.16 })
+            );
+            plazaRim.rotation.x = -Math.PI / 2;
+            plazaRim.position.y = 0.035;
+            plazaRim.receiveShadow = true;
+            villageWorldGroup.add(plazaRim);
+            villagePavingMeshes.push(plazaRim);
+            addPaving(8, 168, 0, 0);
+            addPaving(168, 7, 0, 0);
+            addPaving(5.4, 128, -19, 0);
+            addPaving(5.4, 128, 19, 0);
+            addPaving(128, 5.4, 0, -19);
+            addPaving(128, 5.4, 0, 19);
+            [-27, 27].forEach(x => addPaving(3.6, 104, x, 0));
+            [-27, 27].forEach(z => addPaving(92, 3.6, 0, z));
+            [-3.2, 3.2].forEach(x => {
+                const drain = new THREE.Group();
+                drain.position.set(x, 0.055, 0);
+                villageWorldGroup.add(drain);
+                addBox(drain, mats.iron, [0, 0, 0], [0.54, 0.035, 1.15], 0, false);
+                for (let i = 0; i < 7; i++) {
+                    addBox(drain, mats.brass, [0, 0.021, -0.47 + i * 0.155], [0.48, 0.018, 0.025], 0, false);
+                }
+            });
+
+            const createLabelTexture = (title, subtitle) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 160;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#39291d';
+                ctx.fillRect(0, 0, 512, 160);
+                ctx.strokeStyle = '#c7a362';
+                ctx.lineWidth = 8;
+                ctx.strokeRect(8, 8, 496, 144);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#f4dfb0';
+                ctx.font = 'bold 48px Georgia';
+                ctx.fillText(title, 256, 75, 460);
+                ctx.fillStyle = '#d0b982';
+                ctx.font = '24px Georgia';
+                ctx.fillText(subtitle, 256, 119, 460);
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.anisotropy = 4;
+                return texture;
+            };
+
+            const makeHouse = (x, z, yaw, options = {}) => {
+                const house = new THREE.Group();
+                house.position.set(x, 0, z);
+                house.rotation.y = yaw;
+                villageWorldGroup.add(house);
+                const width = options.width || 5.4;
+                const depth = options.depth || 4.8;
+                addCollisionArea(x, z, Math.max(width, depth) * 0.48 + 0.65);
+                const wallH = options.height || 2.8;
+                const plaster = options.plaster || mats.plaster[0];
+                const roof = options.roof || mats.roofs[0];
+                const doorMat = options.door || mats.timberLight;
+
+                addBox(house, mats.darkStone, [0, 0.3, 0], [width + 0.28, 0.6, depth + 0.25]);
+                addBox(house, plaster, [0, wallH / 2 + 0.55, 0], [width, wallH, depth]);
+                addBox(house, mats.timber, [0, 0.68, depth / 2 + 0.035], [width + 0.08, 0.17, 0.12]);
+                addBox(house, mats.timber, [0, wallH + 0.51, depth / 2 + 0.035], [width + 0.08, 0.16, 0.12]);
+                [-width / 2 + 0.12, width / 2 - 0.12].forEach(px => {
+                    addBox(house, mats.timber, [px, wallH / 2 + 0.55, depth / 2 + 0.04], [0.19, wallH + 0.06, 0.14]);
+                });
+
+                const slope = Math.atan2(1.45, depth / 2 + 0.12);
+                [-1, 1].forEach(side => {
+                    const roofRun = depth / 2 + 0.12;
+                    const panel = addBox(house, roof, [0, wallH + 1.275, side * roofRun * 0.5], [width + 0.78, 0.12, Math.sqrt(roofRun ** 2 + 1.45 ** 2)], 0);
+                    panel.rotation.x = side * slope;
+                    for (let row = 0; row < 4; row++) {
+                        const zPos = side * (0.42 + row * 0.52);
+                        const yPos = wallH + 2.0 - Math.abs(zPos) * 1.45 / roofRun;
+                        const trim = addBox(house, mats.timberLight, [0, yPos, zPos], [width + 0.56, 0.075, 0.12], 0, false);
+                        trim.rotation.x = side * slope;
+                    }
+                });
+                addBox(house, mats.timberLight, [0, wallH + 2.02, 0], [width + 0.9, 0.2, 0.28]);
+
+                const gableShape = new THREE.Shape();
+                gableShape.moveTo(-width / 2, 0);
+                gableShape.lineTo(width / 2, 0);
+                gableShape.lineTo(0, 1.48);
+                gableShape.closePath();
+                const gableGeo = new THREE.ExtrudeGeometry(gableShape, { depth: 0.09, bevelEnabled: false });
+                [-1, 1].forEach(side => {
+                    const gable = new THREE.Mesh(gableGeo, plaster);
+                    gable.position.set(0, wallH + 0.52, side * (depth / 2 - 0.04));
+                    if (side < 0) gable.rotation.y = Math.PI;
+                    gable.castShadow = true;
+                    house.add(gable);
+                    addBox(house, mats.timberLight, [0, wallH + 1.15, side * (depth / 2 + 0.035)], [width, 0.1, 0.12]);
+                    addBox(house, mats.timberLight, [0, wallH + 1.95, side * (depth / 2 + 0.035)], [0.13, 1.72, 0.12]);
+                });
+
+                addBox(house, doorMat, [0, 1.15, depth / 2 + 0.09], [1.08, 1.85, 0.16]);
+                addBox(house, mats.timber, [-0.38, 1.15, depth / 2 + 0.19], [0.055, 1.62, 0.035]);
+                addBox(house, mats.timber, [0, 2.08, depth / 2 + 0.19], [1.12, 0.1, 0.07]);
+                const knob = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), mats.brass);
+                knob.position.set(0.34, 1.15, depth / 2 + 0.2);
+                house.add(knob);
+
+                [-1, 1].forEach(side => {
+                    const wx = side * width * 0.31;
+                    addBox(house, mats.timber, [wx, 1.9, depth / 2 + 0.1], [0.92, 0.94, 0.1]);
+                    addBox(house, mats.warmWindow, [wx, 1.9, depth / 2 + 0.16], [0.68, 0.69, 0.04], 0, false);
+                    addBox(house, mats.timberLight, [wx, 1.9, depth / 2 + 0.2], [0.075, 0.76, 0.045], 0, false);
+                    addBox(house, mats.timberLight, [wx, 1.9, depth / 2 + 0.2], [0.76, 0.075, 0.045], 0, false);
+                    addBox(house, mats.timber, [wx, 2.43, depth / 2 + 0.12], [1.12, 0.08, 0.21]);
+                });
+
+                for (let i = 0; i < 3; i++) {
+                    addBox(house, mats.timberLight, [-width * 0.32 + i * 0.86, 1.13, -depth / 2 - 0.09], [0.76, 1.05, 0.1]);
+                }
+                if (options.chimney !== false) {
+                    addBox(house, mats.darkStone, [width * 0.28, wallH + 1.75, -depth * 0.18], [0.55, 1.5, 0.58]);
+                    addBox(house, mats.stone, [width * 0.28, wallH + 2.52, -depth * 0.18], [0.72, 0.16, 0.72]);
+                    if (options.smoke) {
+                        const origin = new THREE.Vector3(width * 0.28, wallH + 2.8, -depth * 0.18)
+                            .applyEuler(house.rotation)
+                            .add(house.position);
+                        const texture = buildChimneySmokeTexture();
+                        for (let i = 0; i < 5; i++) {
+                            const material = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0, depthWrite: false });
+                            const sprite = new THREE.Sprite(material);
+                            villageEffectsGroup.add(sprite);
+                            villageSmokePuffs.push({ sprite, material, origin: origin.clone(), phase: i / 5 });
+                        }
+                    }
+                }
+                if (options.sign) {
+                    const sign = new THREE.Mesh(
+                        new THREE.PlaneGeometry(2.35, 0.74),
+                        new THREE.MeshStandardMaterial({ map: createLabelTexture(options.sign, options.sub || 'YANG-SHIN'), roughness: 0.75 })
+                    );
+                    sign.position.set(0, 2.68, depth / 2 + 0.28);
+                    house.add(sign);
+                    addBox(house, mats.timber, [0, 3.12, depth / 2 + 0.28], [2.55, 0.12, 0.12]);
+                }
+                return house;
+            };
+
+            const makeTree = (x, z, size = 1) => {
+                const tree = new THREE.Group();
+                tree.position.set(x, getVillageTerrainHeight(x, z), z);
+                tree.scale.setScalar(size);
+                villageWorldGroup.add(tree);
+                addMesh(tree, new THREE.CylinderGeometry(0.24, 0.46, 3.2, 9), mats.timberLight, [0, 1.6, 0], null);
+                const crownGeo = new THREE.IcosahedronGeometry(1, 2);
+                [[0, 3.1, 0, 1.65], [-0.65, 4.0, 0.15, 1.35], [0.55, 4.25, -0.2, 1.25]].forEach((item, index) => {
+                    addMesh(tree, crownGeo, mats.leaf[(Math.floor(x * 7 + z * 11 + index) + 12) % mats.leaf.length], [item[0], item[1], item[2]], [item[3], item[3] * 0.92, item[3]]);
+                });
+                return tree;
+            };
+
+            const makeLantern = (x, z) => {
+                const group = new THREE.Group();
+                group.position.set(x, 0, z);
+                villageWorldGroup.add(group);
+                addMesh(group, new THREE.CylinderGeometry(0.12, 0.2, 2.8, 8), mats.timber, [0, 1.4, 0], null);
+                addBox(group, mats.timberLight, [0, 2.76, 0], [0.62, 0.12, 0.62]);
+                addMesh(group, new THREE.BoxGeometry(0.42, 0.56, 0.42), mats.warmWindow, [0, 2.42, 0], null);
+                addBox(group, mats.timber, [0, 2.94, 0], [0.74, 0.13, 0.74]);
+                if (villageLanternLights.length < 4) {
+                    const light = new THREE.PointLight(0xffb15b, 1.15, 9, 2);
+                    light.position.set(x, 2.5, z);
+                    scene.add(light);
+                    villageLanternLights.push(light);
+                }
+                return group;
+            };
+
+            const makeStall = (x, z, colorIndex, label) => {
+                const stall = new THREE.Group();
+                stall.position.set(x, 0, z);
+                stall.rotation.y = Math.atan2(-x, z);
+                villageWorldGroup.add(stall);
+                addCollisionArea(x, z, 1.9);
+                [-1.45, 1.45].forEach(px => {
+                    addBox(stall, mats.timber, [px, 1.15, 0], [0.16, 2.3, 0.16]);
+                    addBox(stall, mats.timber, [px, 2.35, 0], [0.18, 0.18, 2.2]);
+                });
+                addBox(stall, mats.wood, [0, 1.28, 0.24], [3.2, 0.2, 1.05]);
+                const awning = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 2.55), mats.cloth[colorIndex % mats.cloth.length]);
+                awning.position.set(0, 2.48, -0.42);
+                awning.rotation.x = -Math.PI / 2;
+                stall.add(awning);
+                for (let i = 0; i < 5; i++) {
+                    addBox(stall, mats.cloth[(colorIndex + i) % mats.cloth.length], [-1.4 + i * 0.7, 2.31, 0.84], [0.65, 0.5, 0.055], 0, false);
+                }
+                [-0.85, 0, 0.85].forEach((px, i) => {
+                    const goodsMat = [mats.brass, mats.leaf[1], mats.cloth[1]][i];
+                    addMesh(stall, new THREE.SphereGeometry(0.24, 10, 8), goodsMat, [px, 1.55, 0.18], [1.1, 0.72, 0.85]);
+                });
+                const basketMaterial = new THREE.MeshStandardMaterial({ color: 0x80603b, map: timberTexture, roughness: 1 });
+                const produceMaterials = [
+                    new THREE.MeshStandardMaterial({ color: 0x9b3d2e, roughness: 0.78 }),
+                    new THREE.MeshStandardMaterial({ color: 0xc5a24d, roughness: 0.8 }),
+                    new THREE.MeshStandardMaterial({ color: 0x657b3f, roughness: 0.9 })
+                ];
+                [-1.08, 1.08].forEach((px, basketIndex) => {
+                    addMesh(stall, new THREE.CylinderGeometry(0.29, 0.22, 0.32, 12, 1, true), basketMaterial, [px, 1.51, 0.36], null, 0, false);
+                    const rim = addMesh(stall, new THREE.TorusGeometry(0.27, 0.025, 6, 16), mats.timberLight, [px, 1.68, 0.36], null, 0, false);
+                    rim.rotation.x = Math.PI / 2;
+                    for (let item = 0; item < 4; item++) {
+                        const angle = item * Math.PI / 2 + basketIndex * 0.35;
+                        addMesh(
+                            stall,
+                            new THREE.SphereGeometry(0.12, 8, 6),
+                            produceMaterials[(item + basketIndex) % produceMaterials.length],
+                            [px + Math.cos(angle) * 0.12, 1.68 + (item % 2) * 0.035, 0.36 + Math.sin(angle) * 0.12],
+                            [1, 0.9, 1],
+                            0,
+                            false
+                        );
+                    }
+                });
+                const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.43), new THREE.MeshStandardMaterial({ map: createLabelTexture(label, 'PAZAR ESNAFI'), roughness: 0.9 }));
+                sign.position.set(0, 2.02, 0.84);
+                stall.add(sign);
+                return stall;
+            };
+
+            const batchVillagerMeshes = npc => {
+                npc.updateMatrixWorld(true);
+                const sourceMeshes = [];
+                npc.traverse(node => {
+                    if (!node.isMesh) return;
+                    const batchClass = node.material.userData.npcBatchClass;
+                    const batchMaterial = npcBatchMaterials[batchClass];
+                    if (!batchMaterial) {
+                        throw new Error(`NPC materyali için toplu çizim sınıfı eksik: ${batchClass || node.material.type}`);
+                    }
+                    const color = node.material.color || new THREE.Color(0xffffff);
+                    const colors = new Float32Array(node.geometry.attributes.position.count * 3);
+                    for (let i = 0; i < node.geometry.attributes.position.count; i++) {
+                        colors[i * 3] = color.r;
+                        colors[i * 3 + 1] = color.g;
+                        colors[i * 3 + 2] = color.b;
+                    }
+                    node.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                    node.material = batchMaterial;
+                    sourceMeshes.push(node);
+                });
+                mergeVillageMeshes(sourceMeshes, npc, npc, new Set([boxGeo]));
+            };
+
+            const makeVillager = (x, z, tunicColor, facing = 0, name = '', profession = 'villager') => {
+                const npc = new THREE.Group();
+                npc.position.set(x, 0, z);
+                npc.rotation.y = facing;
+                villageWorldGroup.add(npc);
+                const palette = profession === 'guard'
+                    ? { coat: 0x344b59, trim: 0xb18a4f, pants: 0x34383a, skin: 0xb97956, hair: 0x29241f }
+                    : profession === 'herbalist'
+                        ? { coat: 0x716344, trim: 0xb79d62, pants: 0x4a4237, skin: 0xd19a73, hair: 0x382923 }
+                        : profession === 'merchant'
+                            ? { coat: 0x7d4832, trim: 0xd0b176, pants: 0x43372e, skin: 0xc58b66, hair: 0x3b2820 }
+                            : profession === 'traveler'
+                                ? { coat: 0x42515b, trim: 0x9c7949, pants: 0x393d40, skin: 0xb77e5e, hair: 0x29221d }
+                                : { coat: 0x584638, trim: 0x9f8157, pants: 0x494239, skin: 0xc58b69, hair: 0x38271f };
+                const coatColor = tunicColor || palette.coat;
+                const skin = new THREE.MeshStandardMaterial({ color: palette.skin, roughness: 0.84 });
+                const hair = new THREE.MeshStandardMaterial({ color: palette.hair, roughness: 0.9 });
+                const pants = new THREE.MeshStandardMaterial({ color: palette.pants, map: clothTexture, bumpMap: clothTexture, bumpScale: 0.008, roughness: 0.97 });
+                const tunic = new THREE.MeshStandardMaterial({ color: coatColor, map: clothTexture, bumpMap: clothTexture, bumpScale: 0.012, roughness: 0.96 });
+                const trim = new THREE.MeshStandardMaterial({ color: palette.trim, map: clothTexture, roughness: 0.9 });
+                const bootLeather = new THREE.MeshStandardMaterial({ color: 0x483022, roughness: 0.83 });
+                const eyeWhite = new THREE.MeshStandardMaterial({ color: 0xe5d9c7, roughness: 0.52 });
+                const dark = new THREE.MeshStandardMaterial({ color: 0x201a17, roughness: 0.8 });
+                const brass = new THREE.MeshStandardMaterial({ color: 0xb38a47, metalness: 0.42, roughness: 0.42 });
+                [pants, tunic, trim].forEach(material => { material.userData.npcBatchClass = 'cloth'; });
+                [skin, hair, bootLeather, eyeWhite, dark].forEach(material => { material.userData.npcBatchClass = 'skin'; });
+                brass.userData.npcBatchClass = 'metal';
+                const compact = (geo, material, position, scale) => addMesh(npc, geo, material, position, scale);
+
+                [-1, 1].forEach(side => {
+                    const leg = addMesh(npc, new THREE.CylinderGeometry(0.105, 0.09, 0.67, 12, 3), pants, [side * 0.14, 0.54, 0], null);
+                    leg.rotation.z = side * -0.035;
+                    addMesh(npc, new THREE.SphereGeometry(0.105, 12, 8), pants, [side * 0.14, 0.77, 0], [1, 0.78, 0.95]);
+                    addMesh(npc, new THREE.CylinderGeometry(0.105, 0.115, 0.19, 12), bootLeather, [side * 0.14, 0.15, 0.055], null);
+                    addBox(npc, bootLeather, [side * 0.14, 0.065, 0.13], [0.23, 0.09, 0.37]);
+                    addBox(npc, mats.darkStone, [side * 0.14, 0.028, 0.1], [0.24, 0.045, 0.39], 0, false);
+                });
+
+                compact(new THREE.CylinderGeometry(0.205, 0.275, 0.68, 16, 4), tunic, [0, 1.28, 0], null);
+                compact(new THREE.CylinderGeometry(0.245, 0.335, 0.53, 16, 3, true), tunic, [0, 1.15, 0], null);
+                compact(new THREE.CylinderGeometry(0.275, 0.275, 0.12, 20), trim, [0, 0.91, 0], null);
+                compact(new THREE.CylinderGeometry(0.275, 0.29, 0.095, 20), bootLeather, [0, 0.94, 0], null);
+                addBox(npc, brass, [0, 0.94, 0.285], [0.105, 0.105, 0.04]);
+                addMesh(npc, new THREE.SphereGeometry(0.033, 8, 6), mats.brass, [0, 0.94, 0.313], null);
+
+                const lapelShape = new THREE.Shape();
+                lapelShape.moveTo(0, 0);
+                lapelShape.lineTo(0.14, 0.48);
+                lapelShape.lineTo(0.035, 0.66);
+                lapelShape.lineTo(-0.045, 0.25);
+                lapelShape.closePath();
+                const lapelGeometry = new THREE.ShapeGeometry(lapelShape);
+                [-1, 1].forEach(side => {
+                    const lapel = addMesh(npc, lapelGeometry, trim, [side * 0.035, 1.02, 0.246], null, 0, false);
+                    lapel.rotation.y = side < 0 ? Math.PI : 0;
+                });
+                const collar = new THREE.Mesh(new THREE.TorusGeometry(0.205, 0.035, 8, 24), trim);
+                collar.rotation.x = Math.PI / 2;
+                collar.position.set(0, 1.625, 0);
+                npc.add(collar);
+
+                const armPivots = [];
+                [-1, 1].forEach(side => {
+                    const pivot = new THREE.Group();
+                    pivot.position.set(side * 0.285, 1.55, 0);
+                    npc.add(pivot);
+                    const sleeve = addMesh(pivot, new THREE.CylinderGeometry(0.108, 0.09, 0.44, 12, 3), tunic, [side * 0.035, -0.22, 0], null);
+                    sleeve.rotation.z = side * -0.16;
+                    addMesh(pivot, new THREE.CylinderGeometry(0.09, 0.072, 0.37, 12, 3), tunic, [side * 0.07, -0.6, 0.018], null);
+                    addMesh(pivot, new THREE.CylinderGeometry(0.077, 0.08, 0.09, 12), trim, [side * 0.075, -0.79, 0.025], null);
+                    addMesh(pivot, new THREE.SphereGeometry(0.075, 12, 8), skin, [side * 0.075, -0.87, 0.035], [0.88, 1.1, 0.74]);
+                    armPivots.push(pivot);
+                });
+
+                if (profession === 'merchant' || profession === 'herbalist') {
+                    const apronColor = profession === 'herbalist' ? 0xb29a62 : 0x514638;
+                    const apron = new THREE.MeshStandardMaterial({ color: apronColor, map: clothTexture, bumpMap: clothTexture, roughness: 0.98 });
+                    apron.userData.npcBatchClass = 'cloth';
+                    addBox(npc, apron, [0, 1.15, 0.29], [0.38, 0.48, 0.035]);
+                    addBox(npc, trim, [0, 0.91, 0.313], [0.4, 0.055, 0.045]);
+                    [-0.13, 0, 0.13].forEach(px => addBox(npc, bootLeather, [px, 1.13, 0.315], [0.07, 0.105, 0.025], 0, false));
+                }
+
+                if (profession === 'guard') {
+                    [-1, 1].forEach(side => {
+                        const pauldron = addMesh(npc, new THREE.SphereGeometry(0.145, 12, 8), brass, [side * 0.34, 1.55, 0], [1.3, 0.58, 1]);
+                        pauldron.rotation.z = side * -0.2;
+                    });
+                    const cloak = new THREE.Mesh(new THREE.PlaneGeometry(0.48, 0.76, 2, 4), mats.cloth[0]);
+                    cloak.position.set(0, 1.23, -0.19);
+                    cloak.rotation.x = 0.08;
+                    npc.add(cloak);
+                }
+
+                const head = new THREE.Group();
+                head.position.set(0, 1.77, 0);
+                npc.add(head);
+                addMesh(head, new THREE.SphereGeometry(0.18, 18, 14), skin, [0, 0.04, 0], [0.88, 1.12, 0.86]);
+                [-1, 1].forEach(side => {
+                    addMesh(head, new THREE.SphereGeometry(0.043, 10, 8), skin, [side * 0.161, 0.015, 0], [0.8, 1.12, 0.75]);
+                    addMesh(head, new THREE.SphereGeometry(0.026, 10, 8), eyeWhite, [side * 0.067, 0.055, 0.151], [1, 0.76, 0.48]);
+                    addMesh(head, new THREE.SphereGeometry(0.012, 8, 6), dark, [side * 0.067, 0.053, 0.164], [1, 1, 0.55]);
+                    addBox(head, hair, [side * 0.067, 0.098, 0.15], [0.058, 0.018, 0.02], side * -0.08, false);
+                });
+                addMesh(head, new THREE.SphereGeometry(0.037, 10, 8), skin, [0, 0.005, 0.172], [0.72, 0.95, 0.9]);
+                addMesh(head, new THREE.SphereGeometry(0.018, 8, 6), dark, [0, -0.072, 0.148], [1.5, 0.35, 0.5]);
+                addMesh(head, new THREE.SphereGeometry(0.185, 18, 12), hair, [0, 0.132, -0.014], [1.02, 0.68, 1.02]);
+                addMesh(head, new THREE.SphereGeometry(0.13, 12, 9), hair, [0, -0.045, -0.095], [1.13, 1.0, 0.72]);
+
+                if (profession === 'guard') {
+                    addMesh(head, new THREE.CylinderGeometry(0.18, 0.19, 0.16, 16), brass, [0, 0.19, 0], null);
+                    addMesh(head, new THREE.SphereGeometry(0.17, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.52), mats.iron, [0, 0.23, 0], null);
+                    addBox(head, mats.brass, [0, 0.22, 0.16], [0.1, 0.055, 0.025], 0, false);
+                } else if (profession === 'herbalist') {
+                    addMesh(head, new THREE.CylinderGeometry(0.235, 0.19, 0.035, 20), trim, [0, 0.18, 0], null);
+                    addMesh(head, new THREE.ConeGeometry(0.17, 0.18, 16), trim, [0, 0.285, 0], null);
+                } else if (profession === 'traveler') {
+                    addMesh(head, new THREE.ConeGeometry(0.2, 0.27, 16), tunic, [0, 0.275, -0.01], null);
+                    addMesh(head, new THREE.CylinderGeometry(0.2, 0.2, 0.025, 18), trim, [0, 0.19, 0], null);
+                } else if (profession === 'merchant') {
+                    addMesh(head, new THREE.CylinderGeometry(0.22, 0.2, 0.035, 18), trim, [0, 0.18, 0], null);
+                    addMesh(head, new THREE.CylinderGeometry(0.15, 0.17, 0.15, 16), tunic, [0, 0.255, 0], null);
+                    addMesh(head, new THREE.SphereGeometry(0.13, 14, 8), tunic, [0, 0.32, 0], [1, 0.35, 1]);
+                }
+                if (profession === 'traveler' || profession === 'herbalist') {
+                    addMesh(npc, new THREE.BoxGeometry(0.28, 0.35, 0.17), bootLeather, [-0.29, 1.05, -0.16], null);
+                    addBox(npc, mats.timberLight, [-0.29, 0.89, -0.16], [0.32, 0.055, 0.19]);
+                    addMesh(npc, new THREE.CylinderGeometry(0.035, 0.035, 0.3, 8), trim, [-0.29, 1.29, -0.18], null);
+                }
+
+                if (name && profession !== 'villager') {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 384;
+                    canvas.height = 96;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = 'rgba(11, 15, 19, 0.82)';
+                    ctx.beginPath();
+                    ctx.roundRect(4, 4, 376, 88, 18);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(225, 190, 116, 0.8)';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                    ctx.fillStyle = '#f2dfb5';
+                    ctx.font = 'bold 36px Georgia';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(name, 192, 48, 350);
+                    const label = new THREE.Sprite(new THREE.SpriteMaterial({
+                        map: new THREE.CanvasTexture(canvas),
+                        transparent: true,
+                        depthWrite: false
+                    }));
+                    label.position.set(0, 2.8, 0);
+                    label.scale.set(1.85, 0.46, 1);
+                    npc.add(label);
+                }
+                batchVillagerMeshes(npc);
+                npc.userData.idlePhase = Math.random() * Math.PI * 2;
+                npc.userData.baseY = getVillageTerrainHeight(x, z);
+                npc.userData.baseFacing = facing;
+                npc.position.y = npc.userData.baseY;
+                villageVillagers.push(npc);
+                return npc;
+            };
+
+            const makeFountain = (x, z) => {
+                const fountain = new THREE.Group();
+                fountain.position.set(x, 0, z);
+                villageWorldGroup.add(fountain);
+                addCollisionArea(x, z, 2.8);
+                const basinMaterial = new THREE.MeshStandardMaterial({ color: 0x81796d, roughness: 0.93 });
+                const basinProfile = [
+                    new THREE.Vector2(2.14, 0.06),
+                    new THREE.Vector2(2.48, 0.1),
+                    new THREE.Vector2(2.68, 0.23),
+                    new THREE.Vector2(2.75, 0.42),
+                    new THREE.Vector2(2.64, 0.55),
+                    new THREE.Vector2(2.42, 0.53),
+                    new THREE.Vector2(2.34, 0.42),
+                    new THREE.Vector2(2.25, 0.31)
+                ];
+                addMesh(fountain, new THREE.LatheGeometry(basinProfile, 48), basinMaterial, [0, 0, 0], null);
+                const water = new THREE.Mesh(new THREE.CircleGeometry(2.24, 48), mats.water);
+                water.rotation.x = -Math.PI / 2;
+                water.position.y = 0.37;
+                water.userData.villageWater = true;
+                fountain.add(water);
+                villageWaterMeshes.push(water);
+                addMesh(fountain, new THREE.CylinderGeometry(0.3, 0.48, 1.65, 8), mats.stone, [0, 1.3, 0], null);
+                addMesh(fountain, new THREE.SphereGeometry(0.66, 12, 10), mats.stone, [0, 2.2, 0], [0.9, 0.85, 0.9]);
+                addMesh(fountain, new THREE.CylinderGeometry(0.66, 0.4, 0.18, 12), mats.stone, [0, 1.78, 0], null);
+                return fountain;
+            };
+
+            const makeGateTower = (x, z, side) => {
+                const tower = new THREE.Group();
+                tower.position.set(x, 0, z);
+                villageWorldGroup.add(tower);
+                addCollisionArea(x, z, 2.45);
+                addBox(tower, mats.darkStone, [0, 2.2, 0], [4.2, 4.4, 4.2]);
+                addBox(tower, mats.stone, [0, 4.48, 0], [4.5, 0.35, 4.5]);
+                for (let i = -1; i <= 1; i++) {
+                    addBox(tower, mats.darkStone, [i * 1.28, 5.05, 0], [0.85, 0.9, 0.8]);
+                }
+                addBox(tower, mats.timber, [side * 2.35, 3.7, 0], [0.38, 5.6, 0.38]);
+                addBox(tower, mats.timber, [-side * 2.35, 3.7, 0], [0.38, 5.6, 0.38]);
+                return tower;
+            };
+
+            const makeBarrel = (x, z, scale = 1) => {
+                const barrel = new THREE.Group();
+                barrel.position.set(x, 0, z);
+                barrel.scale.setScalar(scale);
+                villageWorldGroup.add(barrel);
+                addMesh(barrel, new THREE.CylinderGeometry(0.42, 0.37, 0.82, 10), mats.wood, [0, 0.43, 0], null);
+                [0.15, 0.69].forEach(y => addMesh(barrel, new THREE.CylinderGeometry(0.435, 0.435, 0.065, 10), mats.iron, [0, y, 0], null));
+                return barrel;
+            };
+
+            const makeBench = (x, z, yaw = 0) => {
+                const bench = new THREE.Group();
+                bench.position.set(x, getVillageTerrainHeight(x, z), z);
+                bench.rotation.y = yaw;
+                villageWorldGroup.add(bench);
+                addBox(bench, mats.wood, [0, 0.56, 0], [1.65, 0.13, 0.48]);
+                [-0.61, 0.61].forEach(px => {
+                    addBox(bench, mats.timber, [px, 0.27, 0], [0.12, 0.56, 0.46]);
+                    addBox(bench, mats.timber, [px, 0.88, -0.18], [0.12, 0.72, 0.12]);
+                });
+                addBox(bench, mats.wood, [0, 1.14, -0.18], [1.65, 0.14, 0.12]);
+                addCollisionArea(x, z, 0.8);
+                return bench;
+            };
+
+            const makePlanter = (x, z, flowerColor = 0xc45c48) => {
+                const planter = new THREE.Group();
+                planter.position.set(x, getVillageTerrainHeight(x, z), z);
+                villageWorldGroup.add(planter);
+                addMesh(planter, new THREE.CylinderGeometry(0.34, 0.25, 0.38, 12), mats.darkStone, [0, 0.22, 0], null);
+                addMesh(planter, new THREE.CylinderGeometry(0.355, 0.35, 0.06, 12), mats.stone, [0, 0.41, 0], null);
+                addMesh(planter, new THREE.CylinderGeometry(0.3, 0.3, 0.025, 12), mats.wood, [0, 0.445, 0], null, false);
+                const petals = new THREE.MeshStandardMaterial({ color: flowerColor, roughness: 0.82 });
+                const stemMaterial = new THREE.MeshStandardMaterial({ color: 0x4f6939, roughness: 0.98 });
+                for (let i = 0; i < 5; i++) {
+                    const angle = i * 2.4;
+                    const px = Math.cos(angle) * (0.08 + (i % 2) * 0.07);
+                    const pz = Math.sin(angle) * (0.08 + (i % 2) * 0.07);
+                    addMesh(planter, new THREE.CylinderGeometry(0.018, 0.024, 0.28, 5), stemMaterial, [px, 0.58, pz], null, false);
+                    addMesh(planter, new THREE.SphereGeometry(0.1, 8, 6), petals, [px, 0.73, pz], [1, 0.7, 1], 0, false);
+                    addMesh(planter, new THREE.SphereGeometry(0.038, 8, 6), mats.brass, [px, 0.74, pz], null, 0, false);
+                    addMesh(planter, new THREE.SphereGeometry(0.075, 8, 6), stemMaterial, [px + 0.07, 0.62, pz], [1.2, 0.34, 0.6], angle, false);
+                }
+                return planter;
+            };
+
+            const makeWell = (x, z) => {
+                const well = new THREE.Group();
+                well.position.set(x, getVillageTerrainHeight(x, z), z);
+                villageWorldGroup.add(well);
+                addCollisionArea(x, z, 1.45);
+                addMesh(well, new THREE.CylinderGeometry(1.02, 1.12, 0.9, 12), mats.darkStone, [0, 0.48, 0], null);
+                addMesh(well, new THREE.CylinderGeometry(0.99, 1.03, 0.16, 12), mats.stone, [0, 0.94, 0], null);
+                addMesh(well, new THREE.CylinderGeometry(0.83, 0.83, 0.025, 24), mats.water, [0, 0.84, 0], null, false);
+                [-0.8, 0.8].forEach(px => addBox(well, mats.timber, [px, 1.72, 0], [0.16, 1.65, 0.16]));
+                addBox(well, mats.timberLight, [0, 2.52, 0], [2.15, 0.16, 0.16]);
+                const roofA = addBox(well, mats.roofs[0], [0, 2.9, -0.43], [2.35, 0.12, 1.1]);
+                roofA.rotation.x = 0.5;
+                const roofB = addBox(well, mats.roofs[0], [0, 2.9, 0.43], [2.35, 0.12, 1.1]);
+                roofB.rotation.x = -0.5;
+                addMesh(well, new THREE.CylinderGeometry(0.055, 0.055, 1.4, 8), mats.timberLight, [0, 1.95, 0], null);
+                addMesh(well, new THREE.CylinderGeometry(0.34, 0.34, 0.12, 10), mats.wood, [-0.23, 1.96, 0], null);
+                addBox(well, mats.timber, [-0.23, 1.48, 0], [0.09, 0.92, 0.09]);
+                return well;
+            };
+
+            const makeHayStack = (x, z, count = 3) => {
+                const hay = new THREE.Group();
+                hay.position.set(x, getVillageTerrainHeight(x, z), z);
+                villageWorldGroup.add(hay);
+                const hayMat = new THREE.MeshStandardMaterial({ color: 0xb39a58, map: timberTexture, roughness: 1 });
+                for (let i = 0; i < count; i++) {
+                    const bale = addMesh(hay, new THREE.BoxGeometry(1.2, 0.78, 0.82), hayMat, [i % 2 ? 0.42 : 0, i > 1 ? 1.03 : 0.4, i % 2 ? -0.38 : 0], null);
+                    bale.rotation.y = i * 0.12;
+                }
+                addCollisionArea(x, z, 1.1);
+                return hay;
+            };
+
+            const makeWoodpile = (x, z) => {
+                const pile = new THREE.Group();
+                pile.position.set(x, getVillageTerrainHeight(x, z), z);
+                villageWorldGroup.add(pile);
+                for (let row = 0; row < 3; row++) {
+                    for (let log = 0; log < 4; log++) {
+                        const cylinder = addMesh(pile, new THREE.CylinderGeometry(0.12, 0.13, 1.55, 9), mats.wood, [-0.65 + log * 0.43, 0.19 + row * 0.23, row % 2 ? -0.16 : 0.16], null);
+                        cylinder.rotation.z = Math.PI / 2;
+                    }
+                }
+                addBox(pile, mats.timber, [0, 0.12, 0.43], [2.25, 0.22, 0.14]);
+                addBox(pile, mats.timber, [0, 0.12, -0.43], [2.25, 0.22, 0.14]);
+                return pile;
+            };
+
+            const makeHandcart = (x, z, yaw = 0) => {
+                const cart = new THREE.Group();
+                cart.position.set(x, getVillageTerrainHeight(x, z), z);
+                cart.rotation.y = yaw;
+                villageWorldGroup.add(cart);
+                addBox(cart, mats.wood, [0, 0.72, 0], [1.2, 0.14, 1.7]);
+                for (let i = 0; i < 5; i++) {
+                    addBox(cart, mats.timberLight, [-0.52 + i * 0.26, 1.08, -0.65], [0.22, 0.64, 0.09]);
+                    addBox(cart, mats.timberLight, [-0.52 + i * 0.26, 1.08, 0.65], [0.22, 0.64, 0.09]);
+                }
+                [-1, 1].forEach(side => {
+                    const wheel = addMesh(cart, new THREE.TorusGeometry(0.47, 0.075, 8, 20), mats.iron, [side * 0.73, 0.5, 0], null);
+                    wheel.rotation.y = Math.PI / 2;
+                    addMesh(cart, new THREE.CylinderGeometry(0.045, 0.045, 0.24, 8), mats.timber, [side * 0.73, 0.5, 0], null);
+                    addBox(cart, mats.timber, [side * 0.22, 0.59, 1.35], [0.12, 0.12, 1.9], side * 0.08);
+                });
+                addCollisionArea(x, z, 1.1);
+                return cart;
+            };
+
+            const makeGardenPlot = (x, z, crop = 'greens') => {
+                const plot = new THREE.Group();
+                plot.position.set(x, getVillageTerrainHeight(x, z), z);
+                villageWorldGroup.add(plot);
+                const width = 7.4;
+                const depth = 5.4;
+                const soil = new THREE.MeshStandardMaterial({ color: 0x51402b, roughness: 1 });
+                addBox(plot, soil, [0, 0.045, 0], [width, 0.09, depth], 0, false);
+                const fence = mats.timberLight;
+                for (let i = 0; i <= 8; i++) {
+                    const px = -width / 2 + i * width / 8;
+                    addBox(plot, fence, [px, 0.34, -depth / 2], [0.095, 0.68, 0.095], 0, false);
+                    addBox(plot, fence, [px, 0.34, depth / 2], [0.095, 0.68, 0.095], 0, false);
+                }
+                addBox(plot, fence, [0, 0.25, -depth / 2], [width, 0.11, 0.11], 0, false);
+                addBox(plot, fence, [0, 0.25, depth / 2], [width, 0.11, 0.11], 0, false);
+                [-1, 1].forEach(side => addBox(plot, fence, [side * width / 2, 0.25, 0], [0.11, 0.11, depth], 0, false));
+
+                const plantMat = new THREE.MeshStandardMaterial({
+                    color: crop === 'flowers' ? 0x567246 : crop === 'grain' ? 0x8c8748 : 0x4c7748,
+                    roughness: 1
+                });
+                const fruitMat = new THREE.MeshStandardMaterial({ color: crop === 'flowers' ? 0xc98458 : 0x68894c, roughness: 0.86 });
+                const furrowMat = new THREE.MeshStandardMaterial({ color: 0x6b5134, roughness: 1 });
+                for (let row = 0; row < 4; row++) {
+                    const rowZ = -1.75 + row * 1.15;
+                    addBox(plot, furrowMat, [0, 0.105, rowZ], [width - 0.45, 0.035, 0.62], 0, false);
+                    for (let col = 0; col < 11; col++) {
+                        const px = -3.05 + col * 0.61 + (row % 2) * 0.15;
+                        const height = crop === 'grain' ? 0.75 : 0.42 + Math.random() * 0.12;
+                        addMesh(plot, new THREE.CylinderGeometry(0.024, 0.032, height, 5), plantMat, [px, 0.16 + height / 2, rowZ], null, 0, false);
+                        if (crop === 'grain') {
+                            addMesh(plot, new THREE.ConeGeometry(0.055, 0.22, 5), fruitMat, [px, 0.2 + height, rowZ], null, 0, false);
+                        } else {
+                            for (let leaf = 0; leaf < 3; leaf++) {
+                                const angle = leaf * 2.1;
+                                const leafMesh = addMesh(
+                                    plot,
+                                    new THREE.SphereGeometry(0.13, 7, 5),
+                                    fruitMat,
+                                    [px + Math.cos(angle) * 0.11, 0.27 + leaf * 0.045, rowZ + Math.sin(angle) * 0.11],
+                                    [1.4, 0.35, 0.62],
+                                    angle,
+                                    false
+                                );
+                                leafMesh.rotation.z = Math.cos(angle) * 0.2;
+                            }
+                        }
+                    }
+                }
+                return plot;
+            };
+
+            const makeNoticeBoard = (x, z) => {
+                const board = new THREE.Group();
+                board.position.set(x, getVillageTerrainHeight(x, z), z);
+                villageWorldGroup.add(board);
+                addCollisionArea(x, z, 1.25);
+
+                addBox(board, mats.stone, [0, 0.08, 0], [2.5, 0.16, 0.75]);
+                [-1, 1].forEach(side => {
+                    addBox(board, mats.timber, [side * 1.02, 1.42, 0], [0.16, 2.75, 0.16]);
+                    addBox(board, mats.timberLight, [side * 1.02, 2.83, 0], [0.3, 0.16, 0.28]);
+                    addBox(board, mats.timber, [side * 1.02, 0.3, 0], [0.25, 0.5, 0.25]);
+                });
+                addBox(board, mats.timberLight, [0, 2.7, 0], [2.2, 0.15, 0.18]);
+                addBox(board, mats.timber, [0, 1.76, -0.035], [2.04, 1.66, 0.12]);
+                addBox(board, mats.wood, [0, 1.76, 0.045], [1.8, 1.42, 0.045], 0, false);
+
+                const header = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.55, 0.38),
+                    new THREE.MeshStandardMaterial({ map: createLabelTexture('DUYURULAR', 'YANG-SHIN'), roughness: 0.9 })
+                );
+                header.position.set(0, 2.18, 0.079);
+                board.add(header);
+                [[-0.48, 1.57], [0.46, 1.57], [0, 1.03]].forEach(([px, py], index) => {
+                    const sheet = new THREE.Mesh(
+                        new THREE.PlaneGeometry(0.7, 0.52),
+                        new THREE.MeshStandardMaterial({ color: index === 1 ? 0xd3c19b : 0xe0cfaa, roughness: 1, side: THREE.DoubleSide })
+                    );
+                    sheet.position.set(px, py, 0.078 + index * 0.002);
+                    sheet.rotation.z = (index - 1) * 0.055;
+                    board.add(sheet);
+                    for (let line = 0; line < 3; line++) {
+                        addBox(board, mats.timber, [px, py + 0.08 - line * 0.12, 0.083 + index * 0.002], [0.45 - (line % 2) * 0.08, 0.012, 0.008], 0, false);
+                    }
+                    addMesh(board, new THREE.SphereGeometry(0.035, 8, 6), mats.brass, [px, py + 0.2, 0.095 + index * 0.002], null, 0, false);
+                });
+                return board;
+            };
+
+            const makeTrainingDummy = (x, z, facing = 0) => {
+                const dummy = new THREE.Group();
+                dummy.position.set(x, getVillageTerrainHeight(x, z), z);
+                dummy.rotation.y = facing;
+                villageWorldGroup.add(dummy);
+                addCollisionArea(x, z, 0.62);
+
+                const straw = new THREE.MeshStandardMaterial({ color: 0x9d8246, roughness: 1 });
+                const rope = new THREE.MeshStandardMaterial({ color: 0x55402a, roughness: 1 });
+                addBox(dummy, mats.stone, [0, 0.08, 0], [0.95, 0.16, 0.82]);
+                addBox(dummy, mats.timber, [0, 0.28, 0], [0.72, 0.16, 0.62]);
+                addMesh(dummy, new THREE.CylinderGeometry(0.075, 0.095, 2.15, 8), mats.timber, [0, 1.28, 0], null);
+                const body = addMesh(dummy, new THREE.CylinderGeometry(0.24, 0.3, 0.78, 10), straw, [0, 1.53, 0], [1, 1, 0.9], 0, false);
+                body.rotation.z = -0.08;
+                addMesh(dummy, new THREE.SphereGeometry(0.22, 10, 8), straw, [0, 2.08, 0], [0.88, 1.05, 0.85], 0, false);
+                const arms = addMesh(dummy, new THREE.CylinderGeometry(0.075, 0.09, 1.08, 8), mats.timber, [0, 1.84, 0], null, 0, false);
+                arms.rotation.z = Math.PI / 2;
+                [1.28, 1.55, 1.82].forEach(y => {
+                    const binding = addMesh(dummy, new THREE.TorusGeometry(0.245, 0.025, 6, 12), rope, [0, y, 0], null, 0, false);
+                    binding.rotation.x = Math.PI / 2;
+                });
+                addMesh(dummy, new THREE.TorusGeometry(0.16, 0.025, 6, 16), mats.darkStone, [0, 1.55, 0.255], null, 0, false);
+                addMesh(dummy, new THREE.SphereGeometry(0.045, 8, 6), mats.brass, [0, 1.55, 0.27], null, 0, false);
+                return dummy;
+            };
+
+            makeHouse(-15.8, -15.5, 0.78, { sign: 'DEMİRCİ', sub: 'ÇELİK & BİLEME', plaster: mats.plaster[2], roof: mats.roofs[2], chimney: true, smoke: true });
+            makeHouse(15.8, -15.5, -0.78, { sign: 'SİLAH USTASI', sub: 'KILIÇ & ZIRH', plaster: mats.plaster[1], roof: mats.roofs[0] });
+            makeHouse(-15.5, 15.5, -0.78, { sign: 'ŞİFA EVİ', sub: 'OT & İKSİR', plaster: mats.plaster[3], roof: mats.roofs[3] });
+            makeHouse(15.5, 15.5, 0.78, { sign: 'HAN', sub: 'YOLCU DİNLENME YERİ', plaster: mats.plaster[0], roof: mats.roofs[1], width: 6.3, depth: 5.4, smoke: true });
+            makeHouse(-25, -8, 0.2, { plaster: mats.plaster[0], roof: mats.roofs[1], width: 5.8 });
+            makeHouse(25, -8, -0.2, { plaster: mats.plaster[3], roof: mats.roofs[3], width: 5.8 });
+            makeHouse(-25, 8, -0.2, { plaster: mats.plaster[1], roof: mats.roofs[0], width: 5.8 });
+            makeHouse(25, 8, 0.2, { plaster: mats.plaster[2], roof: mats.roofs[2], width: 5.8 });
+            makeHouse(-8, -26, 0, { plaster: mats.plaster[3], roof: mats.roofs[1], width: 6 });
+            makeHouse(8, -26, 0, { plaster: mats.plaster[1], roof: mats.roofs[3], width: 6 });
+            makeHouse(-8, 26, Math.PI, { plaster: mats.plaster[0], roof: mats.roofs[0], width: 6 });
+            makeHouse(8, 26, Math.PI, { plaster: mats.plaster[2], roof: mats.roofs[2], width: 6 });
+            makeHouse(-41, -10, 0.25, { plaster: mats.plaster[3], roof: mats.roofs[0], width: 6, depth: 5.2, smoke: true });
+            makeHouse(41, -10, -0.25, { plaster: mats.plaster[1], roof: mats.roofs[3], width: 6, depth: 5.2 });
+            makeHouse(-41, 10, -0.25, { plaster: mats.plaster[0], roof: mats.roofs[1], width: 6, depth: 5.2 });
+            makeHouse(41, 10, 0.25, { plaster: mats.plaster[2], roof: mats.roofs[2], width: 6, depth: 5.2 });
+            makeHouse(-39, -34, 0.12, { plaster: mats.plaster[2], roof: mats.roofs[3], width: 6.2, depth: 5.4 });
+            makeHouse(39, -34, -0.12, { plaster: mats.plaster[0], roof: mats.roofs[1], width: 6.2, depth: 5.4 });
+            makeHouse(-39, 34, -0.12, { plaster: mats.plaster[1], roof: mats.roofs[2], width: 6.2, depth: 5.4 });
+            makeHouse(39, 34, 0.12, { plaster: mats.plaster[3], roof: mats.roofs[0], width: 6.2, depth: 5.4 });
+
+            makeFountain(-8.2, -8.2);
+            makeNoticeBoard(1.9, -10.4);
+            makeStall(-10.4, 4.2, 0, 'PAZAR');
+            makeStall(10.3, 4.2, 1, 'AVCI');
+            makeStall(-10.4, -1.1, 2, 'OTÇU');
+            makeTrainingDummy(32.8, 5.4, -0.12);
+            makeTrainingDummy(35.1, 5.7, 0.16);
+
+            makeGateTower(-7.1, -43, -1);
+            makeGateTower(7.1, -43, 1);
+            addBox(villageWorldGroup, mats.timber, [0, 5.7, -43], [11, 0.48, 0.65]);
+            addBox(villageWorldGroup, mats.timberLight, [0, 6.25, -43], [8, 0.13, 0.12]);
+            const gateSign = new THREE.Mesh(new THREE.PlaneGeometry(6.2, 1.15), new THREE.MeshStandardMaterial({ map: createLabelTexture('YANG-SHIN', 'DOĞU KRALLIĞI · 1287'), roughness: 0.84 }));
+            gateSign.position.set(0, 5.68, -42.62);
+            villageWorldGroup.add(gateSign);
+            addPaving(13, 18, 0, -43);
+
+            makeVillager(-12.8, 4.1, 0x526347, 0.4, 'Pazarcı Yunus', 'merchant');
+            makeVillager(12.5, 4.1, 0x8b4e32, -0.4, 'Avcı Şahin', 'traveler');
+            makeVillager(-9.4, 4.8, 0x6a4750, 1.3, 'Otçu Narin', 'herbalist');
+            makeVillager(4.8, -11.6, 0x394f61, 2.3, 'Gezgin', 'traveler');
+            makeVillager(19.4, 0.6, 0x87713b, -1.3, 'Köylü', 'villager');
+            makeVillager(-19.2, 1.4, 0x60453a, 1.2, 'Nöbetçi', 'guard');
+            makeVillager(-13.4, 6.1, 0x7b5235, -0.2, 'Terzi Lale', 'merchant');
+            makeVillager(13.3, 6.2, 0x53604a, 0.35, 'Avcı Baran', 'traveler');
+            makeVillager(-11.6, -2.1, 0x655241, 1.8, 'Şifacı Ece', 'herbalist');
+            makeVillager(-3.6, 8.5, 0x46545c, 2.7, 'Yolcu Cem', 'traveler');
+            makeVillager(5.1, 9.1, 0x73513c, -2.5, 'Köylü Aylin', 'villager');
+            makeVillager(24.2, -4.2, 0x4d5847, 0.6, 'Çiftçi Murat', 'villager');
+            makeVillager(-23.7, 3.6, 0x766347, -0.8, 'Oduncu Ali', 'villager');
+            makeVillager(2.5, -36.1, 0x374958, Math.PI, 'Kapı Muhafızı', 'guard');
+            makeVillager(-38.2, -15, 0x6d4934, 0.4, 'Han Yolcusu', 'traveler');
+            makeVillager(38, 15, 0x645344, -2.1, 'Köylü Derya', 'villager');
+            makeVillager(-3.8, 16.5, 0x724d3c, 0.9, 'Marangoz Arda', 'villager');
+            makeVillager(3.6, 17.2, 0x43586a, -0.9, 'Demirci çırağı', 'villager');
+            makeVillager(-37.5, 36, 0x526146, -0.5, 'Tarla Bekçisi', 'guard');
+            makeVillager(38, -36, 0x78694a, 2.4, 'Köy Sakini', 'villager');
+
+            makeBarrel(-18, -12.3, 1);
+            makeBarrel(-17.1, -12.1, 0.82);
+            makeBarrel(18, -12, 1.05);
+            makeBarrel(19, -11.8, 0.76);
+            addBox(villageWorldGroup, mats.wood, [-18, 0.42, 16], [1.25, 0.84, 1.1], 0.2);
+            addBox(villageWorldGroup, mats.timber, [-18, 0.86, 16], [1.32, 0.1, 1.16], 0.2);
+            addBox(villageWorldGroup, mats.wood, [-17.5, 1.28, 16], [0.9, 0.78, 0.75], -0.18);
+
+            makeWell(27.6, -29.8);
+            makeGardenPlot(54, 24, 'greens');
+            makeGardenPlot(54, 34, 'grain');
+            makeGardenPlot(-54, 26, 'flowers');
+            makeHandcart(31.5, 25.4, 0.45);
+            makeHayStack(47.2, 41.2, 4);
+            makeWoodpile(-30.1, -17.8);
+            makeBench(-5.4, -13.8, Math.PI / 2);
+            makeBench(5.1, -13.5, -Math.PI / 2);
+            makeBench(5.1, 13.4, Math.PI / 2);
+            makePlanter(-6.4, -12.2, 0xc45c48);
+            makePlanter(-10.2, -12.1, 0xd1ae59);
+            makePlanter(6.2, -12, 0xa95551);
+            makePlanter(10.1, -11.9, 0xb69b60);
+            makePlanter(-18.5, -17.9, 0xd0a34d);
+            makePlanter(-13.1, 18, 0xc46452);
+            makePlanter(13.8, 18.1, 0xe0c475);
+            makeHandcart(-29.4, 20.6, -0.8);
+            makeWoodpile(42.4, -18.1);
+
+            [-13, 13].forEach(x => {
+                [-13, 13].forEach(z => makeLantern(x, z));
+            });
+            [-43, -31, -13, 13, 31, 43].forEach(x => {
+                [-43, -31, 31, 43].forEach(z => makeLantern(x, z));
+            });
+            [-54, -42, 42, 54].forEach(x => {
+                [-48, -37, 37, 48].forEach(z => makeTree(x + (Math.random() - 0.5) * 3, z + (Math.random() - 0.5) * 3, 0.82 + Math.random() * 0.55));
+            });
+            for (let i = 0; i < 24; i++) {
+                const angle = (i / 24) * Math.PI * 2;
+                const radius = 68 + Math.sin(i * 4.3) * 3.5;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                if (z < -35 && Math.abs(x) < 13) continue;
+                makeTree(x, z, 0.8 + (i % 4) * 0.12);
+            }
+
+            const fenceMat = mats.timberLight;
+            for (let i = 0; i < 11; i++) {
+                const x = -15 + i * 0.92;
+                addBox(villageWorldGroup, fenceMat, [x, 0.56, 22], [0.13, 1.12, 0.13]);
+                if (i < 10) {
+                    addBox(villageWorldGroup, fenceMat, [x + 0.46, 0.38, 22], [0.9, 0.1, 0.1]);
+                    addBox(villageWorldGroup, fenceMat, [x + 0.46, 0.78, 22], [0.9, 0.1, 0.1]);
+                }
+            }
+
+            const streamBed = addBox(villageWorldGroup, mats.darkStone, [-43, -0.06, 0], [7.2, 0.12, 94], 0, false);
+            streamBed.material = new THREE.MeshStandardMaterial({ color: 0x273330, roughness: 0.95 });
+            const stream = addBox(villageWorldGroup, mats.water, [-43, 0.01, 0], [4.2, 0.035, 94], 0, false);
+            stream.material.side = THREE.DoubleSide;
+            villageWaterMeshes.push(stream);
+            for (let z = -39; z <= 39; z += 3.1) {
+                addMesh(villageWorldGroup, new THREE.DodecahedronGeometry(0.55, 0), mats.stone, [-45.5 - Math.random() * 0.8, 0.1, z + Math.random()], [1.4, 0.56, 0.9]);
+                addMesh(villageWorldGroup, new THREE.DodecahedronGeometry(0.5, 0), mats.stone, [-40.4 + Math.random() * 0.8, 0.1, z + Math.random()], [1.4, 0.6, 0.9]);
+            }
+            addPaving(9, 7, -43, 0);
+            [-46.4, -45.3, -44.2, -43.1, -42, -40.9].forEach(x => addBox(villageWorldGroup, mats.wood, [x, 0.14, 0], [0.9, 0.22, 6.7], 0, false));
+            [-1, 1].forEach(side => {
+                for (let index = 0; index <= 6; index++) {
+                    addBox(villageWorldGroup, mats.timber, [-47.25 + index * 1.42, 0.57, side * 3.18], [0.14, 1.08, 0.14]);
+                }
+                addBox(villageWorldGroup, mats.timberLight, [-43, 0.99, side * 3.18], [8.65, 0.14, 0.14]);
+            });
+            [-45.4, -43, -40.6].forEach(x => {
+                addMesh(villageWorldGroup, new THREE.CylinderGeometry(0.34, 0.42, 0.72, 8), mats.darkStone, [x, -0.22, 0], null, 0, false);
+            });
+
+            const forge = new THREE.Group();
+            forge.position.set(-18.2, 0, -13.2);
+            villageWorldGroup.add(forge);
+            addBox(forge, mats.darkStone, [0, 0.57, 0], [1.75, 1.15, 1.25]);
+            addBox(forge, mats.iron, [0, 1.2, 0.42], [1.15, 0.13, 0.42]);
+            addMesh(forge, new THREE.SphereGeometry(0.31, 12, 8), new THREE.MeshStandardMaterial({ color: 0xff6a1c, emissive: 0xff3b08, emissiveIntensity: 1.65 }), [0, 1.42, -0.22], [1, 0.65, 1]);
+            const forgeLight = new THREE.PointLight(0xff642c, 1.6, 8, 2);
+            forgeLight.position.set(-18.2, 1.9, -13.2);
+            scene.add(forgeLight);
+            villageLanternLights.push(forgeLight);
+
+            villageWorldGroup.updateMatrixWorld(true);
+            const dynamicGroups = [...villageVillagers, villageEffectsGroup];
+            const staticMeshes = [];
+            villageWorldGroup.traverse(mesh => {
+                if (!mesh.isMesh || Array.isArray(mesh.material)) return;
+                let ancestor = mesh;
+                while (ancestor && ancestor !== villageWorldGroup && !dynamicGroups.includes(ancestor)) ancestor = ancestor.parent;
+                if (dynamicGroups.includes(ancestor)) return;
+                staticMeshes.push(mesh);
+            });
+            mergeVillageMeshes(staticMeshes, villageWorldGroup, villageWorldGroup);
+            dynamicGroups.forEach(group => villageWorldGroup.add(group));
+            createVillageGrasslands();
+        }
+
+        function createVillageGrasslands() {
+            const bladeGeometry = new THREE.PlaneGeometry(0.085, 0.38, 1, 3);
+            const bladePositions = bladeGeometry.attributes.position;
+            for (let i = 0; i < bladePositions.count; i++) {
+                const height = bladePositions.getY(i) + 0.19;
+                bladePositions.setX(i, bladePositions.getX(i) + Math.pow(height / 0.38, 2) * 0.075);
+                bladePositions.setY(i, height);
+            }
+            bladeGeometry.computeVertexNormals();
+
+            const layers = [0, 2.1, 4.2].map(rotation => {
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    side: THREE.DoubleSide,
+                    roughness: 1
+                });
+                const instances = new THREE.InstancedMesh(bladeGeometry, material, reducedGraphics ? 3600 : 10500);
+                instances.castShadow = false;
+                instances.receiveShadow = false;
+                instances.frustumCulled = false;
+                scene.add(instances);
+                return { mesh: instances, rotation, count: 0 };
+            });
+
+            const dummy = new THREE.Object3D();
+            const color = new THREE.Color();
+            const grassSamples = reducedGraphics ? 3600 : 10500;
+            for (let i = 0; i < grassSamples; i++) {
+                const x = THREE.MathUtils.randFloatSpread(192);
+                const z = THREE.MathUtils.randFloatSpread(192);
+                const distance = Math.hypot(x, z);
+                if (distance < 30 || distance > 94) continue;
+                if (Math.abs(x) < 5.2 || (Math.abs(z) < 3.5 && Math.abs(x) < 48)) continue;
+                if ([19, 27].some(road => Math.abs(Math.abs(x) - road) < 2.4 && Math.abs(z) < 58)
+                    || [19, 27, 35].some(road => Math.abs(Math.abs(z) - road) < 2.3 && Math.abs(x) < 50)) continue;
+                if (Math.abs(x + 43) < 5.7) continue;
+                const insideGarden = [
+                    [-54, 26], [54, 24], [54, 34]
+                ].some(([gardenX, gardenZ]) => Math.abs(x - gardenX) < 4.8 && Math.abs(z - gardenZ) < 3.9);
+                if (insideGarden) continue;
+                if (villageCollisionAreas.some(area => Math.hypot(x - area.x, z - area.z) < area.radius + 1.5)) continue;
+                if (Math.random() < 0.18) continue;
+
+                const scale = 0.65 + Math.random() * 1.5;
+                const hue = 0.22 + Math.random() * 0.075;
+                color.setHSL(hue, 0.42 + Math.random() * 0.3, 0.14 + Math.random() * 0.11);
+                layers.forEach(layer => {
+                    const index = layer.count++;
+                    dummy.position.set(x + Math.cos(layer.rotation) * 0.07, getVillageTerrainHeight(x, z) + 0.015, z + Math.sin(layer.rotation) * 0.07);
+                    dummy.rotation.set(0, Math.random() * Math.PI * 2 + layer.rotation, 0);
+                    dummy.scale.setScalar(scale);
+                    dummy.updateMatrix();
+                    layer.mesh.setMatrixAt(index, dummy.matrix);
+                    layer.mesh.setColorAt(index, color);
+                });
+            }
+            layers.forEach(layer => {
+                layer.mesh.count = layer.count;
+                layer.mesh.instanceMatrix.needsUpdate = true;
+                if (layer.mesh.instanceColor) layer.mesh.instanceColor.needsUpdate = true;
+            });
+            villageGrassMeshes = layers.map(layer => layer.mesh);
+        }
+
+        function changeGroundStyle(style) {
+            if (!groundMesh || !groundMesh.material) return;
+            if (!['stone', 'sand', 'grid'].includes(style)) {
+                throw new Error(`Bilinmeyen zemin dokusu: ${style}`);
+            }
+            const oldGroundMap = groundMesh.material.map;
+            groundMesh.material.map = style === 'stone' ? buildVillageGrassTexture() : buildGroundTexture(style);
+            if (oldGroundMap) oldGroundMap.dispose();
+            groundMesh.material.color.set(style === 'stone' ? 0xffffff : 0xb5aa96);
+            groundMesh.material.needsUpdate = true;
+            const oldPavingMap = villagePavingMeshes[0] && villagePavingMeshes[0].material.map;
+            const pavingMap = buildVillagePavingTexture(style);
+            villagePavingMeshes.forEach(mesh => {
+                mesh.material.map = pavingMap;
+                mesh.material.needsUpdate = true;
+            });
+            if (oldPavingMap) oldPavingMap.dispose();
         }
 
         function createSculptedTorsoGeometry() {
@@ -3869,25 +5376,27 @@
 
         function createMetinStoneTarget() {
             metinStoneGroup = new THREE.Group();
-            metinStoneGroup.position.set(2.5, 0, 2.35);
+            metinStoneGroup.position.set(17.5, 0, 33);
             metinStoneGroup.visible = state.metinActive;
             scene.add(metinStoneGroup);
 
-            const rockGeo = new THREE.DodecahedronGeometry(0.92, 2);
+            const rockGeo = new THREE.DodecahedronGeometry(1.08, 3);
             const pos = rockGeo.attributes.position;
             for (let i = 0; i < pos.count; i++) {
                 const vx = pos.getX(i), vy = pos.getY(i), vz = pos.getZ(i);
-                const noise = 0.85 + 0.22 * Math.sin(vx * 5 + vy * 4) * Math.cos(vz * 4);
+                const noise = 0.9 + 0.11 * Math.sin(vx * 5 + vy * 4) * Math.cos(vz * 4);
                 pos.setXYZ(i, vx * noise, (vy + 0.85) * 1.18, vz * noise);
             }
             rockGeo.computeVertexNormals();
 
             const rockMat = new THREE.MeshStandardMaterial({
-                color: 0x261520,
-                emissive: 0xb91c1c,
-                emissiveIntensity: 0.85,
-                roughness: 0.52,
-                metalness: 0.35
+                color: 0xd4c7bb,
+                map: buildMetinStoneTexture(),
+                emissive: 0x54150e,
+                emissiveIntensity: 0.24,
+                roughness: 0.84,
+                metalness: 0.08,
+                flatShading: false
             });
             metinRockMesh = new THREE.Mesh(rockGeo, rockMat);
             metinRockMesh.castShadow = true;
@@ -3895,12 +5404,13 @@
             metinStoneGroup.add(metinRockMesh);
 
             const auraRing = new THREE.Mesh(
-                new THREE.RingGeometry(0.98, 1.30, 36),
-                new THREE.MeshBasicMaterial({ color: 0xf43f5e, side: THREE.DoubleSide, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending })
+                new THREE.RingGeometry(1.22, 1.48, 48),
+                new THREE.MeshBasicMaterial({ color: 0x9f3427, side: THREE.DoubleSide, transparent: true, opacity: 0.34, blending: THREE.AdditiveBlending })
             );
             auraRing.rotation.x = -Math.PI / 2;
             auraRing.position.y = 0.02;
             metinStoneGroup.add(auraRing);
+            villageCollisionAreas.push({ x: metinStoneGroup.position.x, z: metinStoneGroup.position.z, radius: 1.8 });
         }
 
         function spawnFootstepDust(worldPos, scaleMultiplier = 1.0) {
@@ -4064,8 +5574,9 @@
                     return; // Already in ideal sword strike range of the Metin stone
                 }
             }
-            warriorGroup.position.x = THREE.MathUtils.clamp(nextPos.x, -26, 26);
-            warriorGroup.position.z = THREE.MathUtils.clamp(nextPos.z, -26, 26);
+            if (isVillagePositionBlocked(nextPos)) return;
+            warriorGroup.position.x = THREE.MathUtils.clamp(nextPos.x, -78, 78);
+            warriorGroup.position.z = THREE.MathUtils.clamp(nextPos.z, -78, 78);
         }
 
         function startAttackHold(e) {
@@ -4255,9 +5766,10 @@
                 moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), camState.theta);
 
                 const moveSpeed = 4.7 * state.currentSpeed * state.animSpeed;
-                warriorGroup.position.addScaledVector(moveDir, dt * moveSpeed);
-                warriorGroup.position.x = THREE.MathUtils.clamp(warriorGroup.position.x, -26, 26);
-                warriorGroup.position.z = THREE.MathUtils.clamp(warriorGroup.position.z, -26, 26);
+                const nextPosition = warriorGroup.position.clone().addScaledVector(moveDir, dt * moveSpeed);
+                nextPosition.x = THREE.MathUtils.clamp(nextPosition.x, -78, 78);
+                nextPosition.z = THREE.MathUtils.clamp(nextPosition.z, -78, 78);
+                if (!isVillagePositionBlocked(nextPosition)) warriorGroup.position.copy(nextPosition);
 
                 const targetYaw = Math.atan2(moveDir.x, moveDir.z);
                 let diff = targetYaw - warriorGroup.rotation.y;
@@ -5178,7 +6690,7 @@
 
             dom.addEventListener('wheel', (e) => {
                 e.preventDefault();
-                camState.targetRadius = THREE.MathUtils.clamp(camState.targetRadius + e.deltaY * 0.004, 1.6, 16);
+                camState.targetRadius = THREE.MathUtils.clamp(camState.targetRadius + e.deltaY * 0.004, 1.6, 22);
             }, { passive: false });
 
             window.addEventListener('keydown', (e) => {
@@ -5262,22 +6774,24 @@
             });
 
             const button = document.getElementById('anatomy-toggle-btn');
-            button.textContent = state.anatomyView ? 'Zırhı Göster' : 'İnsana Dön';
-            button.setAttribute('aria-pressed', String(state.anatomyView));
+            if (button) {
+                button.textContent = state.anatomyView ? 'Zırhı Göster' : 'İnsana Dön';
+                button.setAttribute('aria-pressed', String(state.anatomyView));
+            }
             if (swordGroup) swordGroup.visible = !state.anatomyView;
         }
 
         function setCameraView(view) {
             const mobile = window.innerWidth <= 640;
             const views = {
-                default: { radius: 4.3, lookAt: new THREE.Vector3(0, 1.38, 0), phi: 1.22, fov: 40 },
-                fullbody: { radius: mobile ? 4.9 : 3.8, lookAt: new THREE.Vector3(0, mobile ? 1.14 : 1.02, 0), phi: 1.28, fov: 38 },
-                closeup: { radius: 1.25, lookAt: new THREE.Vector3(0, 1.77, 0.02), phi: 1.52, fov: 34 },
-                hand: { radius: 1.85, lookAt: new THREE.Vector3(-0.38, 0.93, 0.32), phi: 1.36, fov: 38 }
+                default: { radius: 17.5, lookAt: new THREE.Vector3(0, 1.35, 0), phi: 1.15, fov: 49 },
+                fullbody: { radius: mobile ? 6.2 : 5.4, lookAt: new THREE.Vector3(0, 1.14, 0), phi: 1.28, fov: 40 },
+                closeup: { radius: 4.9, lookAt: new THREE.Vector3(0, 1.24, 0.02), phi: 1.22, fov: 40 },
+                hand: { radius: 3.25, lookAt: new THREE.Vector3(0.18, 1.05, 0.12), phi: 1.08, fov: 36 }
             };
             const selectedView = views[view];
             if (!selectedView) {
-                throw new Error('Unknown camera view: ' + view);
+                throw new Error(`Bilinmeyen kamera görünümü: ${view}`);
             }
 
             activeCameraView = view;
@@ -5292,7 +6806,28 @@
             if (isSamplingAnimations) return;
             const rawDt = Math.min(clock.getDelta(), 0.1);
             const elapsedTime = clock.getElapsedTime();
+            const frameTime = performance.now();
+            if (performanceState.lastFrameTime) {
+                performanceState.sampleTime += (frameTime - performanceState.lastFrameTime) / 1000;
+                performanceState.sampleFrames++;
+            }
+            performanceState.lastFrameTime = frameTime;
+            if (performanceState.sampleTime >= 3) {
+                const averageFps = performanceState.sampleFrames / performanceState.sampleTime;
+                performanceState.lowFrameWindows = averageFps < 42 ? performanceState.lowFrameWindows + 1 : 0;
+                if (performanceState.lowFrameWindows >= 2 && !performanceState.reduced) {
+                    performanceState.reduced = true;
+                    reducedGraphics = true;
+                    renderer.shadowMap.enabled = false;
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 0.75));
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    villageGrassMeshes.forEach(mesh => { mesh.count = Math.floor(mesh.count * 0.5); });
+                }
+                performanceState.sampleTime = 0;
+                performanceState.sampleFrames = 0;
+            }
 
+            animateVillage(elapsedTime);
             updateWarriorAnimation(rawDt, elapsedTime);
             updateUploadedCharacterAnimation(rawDt);
             updateCameraPosition(rawDt);
